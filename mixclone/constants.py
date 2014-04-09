@@ -18,8 +18,8 @@ SITES_NUM_MIN_WGS = 100
 SITES_NUM_MIN_WES = 10
 PHI_INIT = [0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
 PHI_RANGE = [i/100.0 for i in range(2, 99)]
-ETA = 1.01
-#ETA = 1
+#ETA = 1.01
+ETA = 1
 BURN_IN = 10
 EPS = np.finfo(float).eps
 
