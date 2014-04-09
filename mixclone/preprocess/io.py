@@ -31,10 +31,11 @@ ascii_offset = 33
 
 #JointSNVMix
 class PairedCountsIterator:
-    def __init__(self, paired_pileup_iter, ref_genome_fasta, chrom_name, min_depth=20, min_bqual=10, min_mqual=10):
+    def __init__(self, paired_pileup_iter, ref_genome_fasta, chrom_name, chrom_idx, min_depth=20, min_bqual=10, min_mqual=10):
         self.paired_pileup_iter = paired_pileup_iter
         self.ref_genome_fasta = ref_genome_fasta
         self.chrom_name = chrom_name
+        self.chrom_idx = chrom_idx
         self.min_depth = min_depth
         self.min_bqual = min_bqual
         self.min_mqual = min_mqual
@@ -51,6 +52,7 @@ class PairedCountsIterator:
                 continue
             
             pos = normal_column.pos
+            chrom_idx = self.chrom_idx
             ref_base = self.ref_genome_fasta.fetch(self.chrom_name, pos, pos + 1).upper()
             
             if ref_base == '':
@@ -58,7 +60,7 @@ class PairedCountsIterator:
                 % self.ref_genome_fasta.filename
                 sys.exit(-1)
             
-            paired_counts = self._get_paired_counts(normal_column, tumor_column, pos, ref_base)
+            paired_counts = self._get_paired_counts(normal_column, tumor_column, chrom_idx, pos, ref_base)
             
             if paired_counts == None:
                 normal_column, tumor_column = self.paired_pileup_iter.next()
@@ -66,7 +68,7 @@ class PairedCountsIterator:
             else:
                 return paired_counts
 
-    def _get_paired_counts(self, normal_column, tumor_column, pos, ref_base):
+    def _get_paired_counts(self, normal_column, tumor_column, chrom_idx, pos, ref_base):
         normal_bases = self._parse_pileup_column(normal_column)
         tumor_bases = self._parse_pileup_column(tumor_column)
         
@@ -86,6 +88,8 @@ class PairedCountsIterator:
         paired_counts = []
         paired_counts.extend(normal_counts)
         paired_counts.extend(tumor_counts)
+        paired_counts.extend(chrom_idx)
+        paired_counts.extend(pos)
         
         return paired_counts
                
