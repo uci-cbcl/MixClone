@@ -88,8 +88,8 @@ class PairedCountsIterator:
         paired_counts = []
         paired_counts.extend(normal_counts)
         paired_counts.extend(tumor_counts)
-        paired_counts.extend(chrom_idx)
-        paired_counts.extend(pos)
+        paired_counts.append(chrom_idx)
+        paired_counts.append(pos)
         
         return paired_counts
                
