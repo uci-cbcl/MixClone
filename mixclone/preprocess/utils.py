@@ -26,9 +26,9 @@ def BEDParser(bed_file_name):
     for line in inbed:
         fields = line.split('\t')
         chrom_name = fields[0]
-        chrom_ID = chrom_name_to_ID(chrom_name)
+        chrom_idx = chrom_name_to_idx(chrom_name)
         
-        if chrom_ID == -1:
+        if chrom_idx == -1:
             continue
         
         chrom_name, start, end = fields[0:3]
@@ -41,26 +41,26 @@ def BEDParser(bed_file_name):
     
     return (chroms, starts, ends)
     
-def chrom_ID_to_name(ID, format):
+def chrom_idx_to_name(idx, format):
     if format == 'UCSC':
-        chrom_name = 'chr' + str(ID)
+        chrom_name = 'chr' + str(idx)
     elif format == 'ENSEMBL':
-        chrom_name = str(ID)
+        chrom_name = str(idx)
     else:
         print 'Error: %s not supported' % (format)
         sys.exit(1)
 
     return chrom_name
 
-def chrom_name_to_ID(chrom_name):
-    ID = -1
+def chrom_name_to_idx(chrom_name):
+    idx = -1
     
     try:
-        ID = int(chrom_name.strip('chr'))
+        idx = int(chrom_name.strip('chr'))
     except:
         pass
         
-    return ID
+    return idx
 
 def get_chrom_format(chroms):
     format = 'NONE'
@@ -71,7 +71,7 @@ def get_chrom_format(chroms):
             break
         else:
             try:
-                ID = int(chrom)
+                idx = int(chrom)
                 format = 'ENSEMBL'
                 break
             except:
@@ -82,6 +82,25 @@ def get_chrom_format(chroms):
         sys.exit(-1)
     else:
         return format
+
+def get_chrom_lens(chrom_idx_list, sam_SQ):
+    chrom_lens = []
+    for i in range(0, len(chrom_idx_list)):
+        chrom_idx = chrom_idx_list[i]
+    
+        for j in range(0, len(sam_SQ)):
+            if chrom_idx == chrom_name_to_idx(sam_SQ[j]['SN']):
+                chrom_lens.append(int(sam_SQ[j]['LN']))
+                break
+        
+    return chrom_lens
+
+def get_segment_name(chrom_name, start, end):
+    
+    return '_'.join([chrom_name, 'start', str(start), 'end', str(end)])
+
+
+
 
 def normal_heterozygous_filter(counts):
     BAF_N_MAX = constants.BAF_N_MAX
