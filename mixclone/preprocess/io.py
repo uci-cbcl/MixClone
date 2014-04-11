@@ -31,7 +31,8 @@ ascii_offset = 33
 
 #JointSNVMix
 class PairedCountsIterator:
-    def __init__(self, paired_pileup_iter, ref_genome_fasta, chrom_name, chrom_idx, min_depth=20, min_bqual=10, min_mqual=10):
+    def __init__(self, paired_pileup_iter, ref_genome_fasta, chrom_name, chrom_idx,
+                 min_depth=20, min_bqual=10, min_mqual=10):
         self.paired_pileup_iter = paired_pileup_iter
         self.ref_genome_fasta = ref_genome_fasta
         self.chrom_name = chrom_name

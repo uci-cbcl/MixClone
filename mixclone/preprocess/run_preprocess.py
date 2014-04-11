@@ -13,6 +13,7 @@ Modified on 2014-04-10
 '''
 import sys
 import time
+import pickle as pkl
 from multiprocessing import Pool
 
 import numpy as np
@@ -23,24 +24,7 @@ from mixclone.preprocess.data import Data
 from mixclone.preprocess.io import PairedCountsIterator, PairedPileupIterator
 from mixclone.preprocess.utils import *
 
-def run_preprocess(args):        
-    normal_bam = pysam.Samfile(args.normal_bam, 'rb')
-    tumor_bam = pysam.Samfile(args.tumor_bam, 'rb')
-    
-    segments = Segments()
-    
-    if args.segments_bed == None:
-        print 'Loading segments by 22 autosomes...'
-        sys.stdout.flush()
-        segments.segmentation_by_chrom(normal_bam, tumor_bam)
-    else:
-        print 'Loading segments by {0}...'.format(args.segments_bed)
-        sys.stdout.flush()
-        segments.segmentation_by_bed(normal_bam, tumor_bam, args.segments_bed)
-    
-    normal_bam.close()
-    tumor_bam.close()
-    
+def run_preprocess(args): 
     time_start = time.time()           
     
     converter = BamToDataConverter(
@@ -48,8 +32,7 @@ def run_preprocess(args):
                                    args.tumor_bam,
                                    args.reference_genome,
                                    args.filename_base,
-                                   segments,
-                                   WES_flag=args.WES,
+                                   args.segments_bed,
                                    min_depth=args.min_depth,
                                    min_bqual=args.min_base_qual,
                                    min_mqual=args.min_map_qual,
@@ -65,25 +48,34 @@ def run_preprocess(args):
 
 class BamToDataConverter:
     def __init__(self, normal_bam_filename, tumor_bam_filename,
-                 reference_genome_filename, filename_base,
-                 segments, WES_flag=False, min_depth=20, min_bqual=10, min_mqual=10, process_num=1):
+                 reference_genome_filename, filename_base, segments_bed,
+                 min_depth=20, min_bqual=10, min_mqual=10, process_num=1):
         self.normal_bam_filename = normal_bam_filename
         self.tumor_bam_filename = tumor_bam_filename
         self.reference_genome_filename = reference_genome_filename
         self.filename_base = filename_base
+        self.segments_bed = segments_bed
         
-        self.segments = segments
-        self.WES_flag = WES_flag
         self.min_depth = min_depth
         self.min_bqual = min_bqual
         self.min_mqual = min_mqual
         self.process_num = process_num
         
     def convert(self):
-        seg_num = self.segments.num
+        data = Data()
+        normal_bam = pysam.Samfile(self.normal_bam_filename, 'rb')
+        tumor_bam = pysam.Samfile(self.tumor_bam_filename, 'rb')
         
+        print 'Loading segments by {0}...'.format(self.segments_bed)
+        sys.stdout.flush()
+        data.load_segments(normal_bam, tumor_bam, self.segments_bed)
+        
+        normal_bam.close()
+        tumor_bam.close()
+        
+        seg_num = data.seg_num
         process_num = self.process_num
-        
+                
         if process_num > seg_num:
             process_num = seg_num
         
@@ -92,12 +84,13 @@ class BamToDataConverter:
         args_list = []
         
         for j in range(0, seg_num):
-            seg_name = self.segments[j][0]
-            chrom = self.segments[j][1]
-            start = self.segments[j][2]
-            end = self.segments[j][3]
+            seg_name = data.segments[j].name
+            chrom_name = data.segments[j].chrom_name
+            chrom_idx = data.segments[j].chrom_idx
+            start = data.segments[j].start
+            end = data.segments[j].end
             
-            args_tuple = (seg_name, chrom, start, end, self.normal_bam_filename,
+            args_tuple = (seg_name, chrom_name, chrom_idx, start, end, self.normal_bam_filename,
                           self.tumor_bam_filename, self.reference_genome_filename,
                           self.min_depth, self.min_bqual, self.min_mqual)
             
@@ -108,23 +101,24 @@ class BamToDataConverter:
         paired_counts = []
         BAF_counts = []
         
-        for counts_tuple_j in counts_tuple_list:
-            paired_counts_j, BAF_counts_j = counts_tuple_j
-            paired_counts.append(paired_counts_j)
-            BAF_counts.append(BAF_counts_j)
+        for j in range(0, seg_num):
+            paired_counts_j, BAF_counts_j = counts_tuple_list[j]
+            
+            data.segments[j].paired_counts = paired_counts_j
+            data.segments[j].BAF_counts = BAF_counts_j
         
-        BAF_heatmap = BAFHeatMap(BAF_counts)
-        BAF_heatmap.write_heatmap(self.filename_base)
+        data_file_name = self.filename_base + '.MixClone.data.pkl'
+        outfile = open(data_file_name, 'wb')
+        pkl.dump(data, outfile, protocol=2)
         
-        data = Data(self.segments, paired_counts)
-        data.tumor_LOH_test(self.WES_flag)
-        data.write_data(self.filename_base)
+        outfile.close()
+        
     
 #===============================================================================
 # Function
 #===============================================================================
 def process_by_segment(args_tuple):
-    seg_name, chrom, start, end, normal_bam_filename, tumor_bam_filename, \
+    seg_name, chrom_name, chrom_idx, start, end, normal_bam_filename, tumor_bam_filename, \
     reference_genome_filename, min_depth, min_bqual, min_mqual= args_tuple
     
     print 'Preprocessing segment {0}...'.format(seg_name)
@@ -134,11 +128,11 @@ def process_by_segment(args_tuple):
     tumor_bam = pysam.Samfile(tumor_bam_filename, 'rb')
     ref_genome_fasta = pysam.Fastafile(reference_genome_filename)
     
-    normal_pileup_iter = normal_bam.pileup(chrom, start, end)
-    tumor_pileup_iter = tumor_bam.pileup(chrom, start, end)
+    normal_pileup_iter = normal_bam.pileup(chrom_name, start, end)
+    tumor_pileup_iter = tumor_bam.pileup(chrom_name, start, end)
     
     paired_pileup_iter = PairedPileupIterator(normal_pileup_iter, tumor_pileup_iter, start, end)
-    paired_counts_iter = PairedCountsIterator(paired_pileup_iter, ref_genome_fasta, chrom,
+    paired_counts_iter = PairedCountsIterator(paired_pileup_iter, ref_genome_fasta, chrom_name, chrom_idx,
                                               min_depth, min_bqual, min_mqual)
     
     paired_counts_j, BAF_counts_j = iterator_to_counts(paired_counts_iter)

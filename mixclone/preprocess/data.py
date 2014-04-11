@@ -32,7 +32,7 @@ class Segment:
         self.LOH_frac = 0.0
         self.LOH_status = 'NONE'
         self.log2_ratio = 0.0
-        self.paired_counts = []
+        self.paired_counts = None
         self.BAF_counts = None
         self.copy_number = -1
         self.allele_type_idx = ""

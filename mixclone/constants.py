@@ -7,7 +7,7 @@ import numpy as np
 
 BAF_N_MIN = 0.4
 BAF_N_MAX = 0.6
-
+BAF_BINS = np.array(range(0, 100 + 1))/100.0
 
 BURN_IN = 10
 EPS = np.finfo(float).eps
