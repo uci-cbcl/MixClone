@@ -35,7 +35,7 @@ class Segment:
         self.paired_counts = None
         self.BAF_counts = None
         self.copy_number = -1
-        self.allele_type_idx = ""
+        self.allele_type = 'NONE'
         
 
 class Data:

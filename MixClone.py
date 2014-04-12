@@ -16,6 +16,7 @@
 import argparse
 
 from mixclone.preprocess.run_preprocess import run_preprocess
+from mixclone.postprocess.run_postprocess import run_postprocess
 
 
 parser = argparse.ArgumentParser(prog='MixClone')
@@ -56,6 +57,26 @@ parser_preprocess.add_argument('--process_num', default=1, type=int,
                           help='''Number of processes to launch for preprocessing. Default is 1.''')
 
 parser_preprocess.set_defaults(func=run_preprocess)
+
+#===============================================================================
+# Add postprocess sub-command
+#===============================================================================
+parser_postprocess = subparsers.add_parser('postprocess',
+                                      help='''Extract various result files.''')
+
+parser_postprocess.add_argument('filename_base',
+                            help='''Base name of preprocessed files created.''')
+
+parser_postprocess.add_argument('--all', default=False, action='store_true',
+                          help='''Extract all the result files. Default is False.''')
+
+parser_postprocess.add_argument('--paired_counts', default=False, action='store_true',
+                          help='''Extract the paired counts file. Default is False.''')
+
+parser_postprocess.add_argument('--segments', default=False, action='store_true',
+                          help='''Extract the segments file. Default is False.''')
+
+parser_postprocess.set_defaults(func=run_postprocess)
 
 #===============================================================================
 # Run
