@@ -99,9 +99,6 @@ def get_segment_name(chrom_name, start, end):
     
     return '_'.join([chrom_name, 'start', str(start), 'end', str(end)])
 
-
-
-
 def normal_heterozygous_filter(counts):
     BAF_N_MAX = constants.BAF_N_MAX
     BAF_N_MIN = constants.BAF_N_MIN
@@ -136,6 +133,13 @@ def get_BAF_counts(counts):
     BAF_counts, _, _ = np.histogram2d(BAF_N, BAF_T, bins=(BAF_bins, BAF_bins))
     
     return BAF_counts
+
+
+
+
+
+
+
 
 def tumor_LOH_test(counts, WES_flag):
     BAF_T_MAX = constants.BAF_T_MAX
