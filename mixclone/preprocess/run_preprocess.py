@@ -61,19 +61,34 @@ class BamToDataConverter:
         self.min_mqual = min_mqual
         self.process_num = process_num
         
+        self.data = Data()
+        
     def convert(self):
-        data = Data()
+        self._load_segments()
+        
+        self._get_counts()
+        
+        self._get_LOH_frac()
+        
+        data_file_name = self.filename_base + '.MixClone.data.pkl'
+        outfile = open(data_file_name, 'wb')
+        pkl.dump(self.data, outfile, protocol=2)
+        
+        outfile.close()
+        
+    def _load_segments(self):
         normal_bam = pysam.Samfile(self.normal_bam_filename, 'rb')
         tumor_bam = pysam.Samfile(self.tumor_bam_filename, 'rb')
         
         print 'Loading segments by {0}...'.format(self.segments_bed)
         sys.stdout.flush()
-        data.load_segments(normal_bam, tumor_bam, self.segments_bed)
+        self.data.load_segments(normal_bam, tumor_bam, self.segments_bed)
         
         normal_bam.close()
         tumor_bam.close()
         
-        seg_num = data.seg_num
+    def _get_counts(self):
+        seg_num = self.data.seg_num
         process_num = self.process_num
                 
         if process_num > seg_num:
@@ -84,11 +99,11 @@ class BamToDataConverter:
         args_list = []
         
         for j in range(0, seg_num):
-            seg_name = data.segments[j].name
-            chrom_name = data.segments[j].chrom_name
-            chrom_idx = data.segments[j].chrom_idx
-            start = data.segments[j].start
-            end = data.segments[j].end
+            seg_name = self.data.segments[j].name
+            chrom_name = self.data.segments[j].chrom_name
+            chrom_idx = self.data.segments[j].chrom_idx
+            start = self.data.segments[j].start
+            end = self.data.segments[j].end
             
             args_tuple = (seg_name, chrom_name, chrom_idx, start, end, self.normal_bam_filename,
                           self.tumor_bam_filename, self.reference_genome_filename,
@@ -98,22 +113,18 @@ class BamToDataConverter:
             
         counts_tuple_list = pool.map(process_by_segment, args_list)
         
-        paired_counts = []
-        BAF_counts = []
-        
         for j in range(0, seg_num):
             paired_counts_j, BAF_counts_j = counts_tuple_list[j]
             
-            data.segments[j].paired_counts = paired_counts_j
-            data.segments[j].BAF_counts = BAF_counts_j
-        
-        data_file_name = self.filename_base + '.MixClone.data.pkl'
-        outfile = open(data_file_name, 'wb')
-        pkl.dump(data, outfile, protocol=2)
-        
-        outfile.close()
-        
+            self.data.segments[j].paired_counts = paired_counts_j
+            self.data.segments[j].BAF_counts = BAF_counts_j    
     
+    def _get_LOH_frac(self):
+        seg_num = self.data.seg_num
+        
+        for j in range(0, seg_num):
+            self.data.segments[j].LOH_frac = get_LOH_frac(self.data.segments[j].paired_counts)
+
 #===============================================================================
 # Function
 #===============================================================================
@@ -145,43 +156,43 @@ def process_by_segment(args_tuple):
     return counts_tuple_j
 
 def iterator_to_counts(paired_counts_iter):
-    buffer = 100000
+    buff = 100000
     
     paired_counts_j = np.array([[], [], [], [], [], []], dtype=int).transpose()
     BAF_counts_j = np.zeros((100, 100))
-    buffer_counts = []
+    buff_counts = []
     i = 0
         
     for counts in paired_counts_iter:
-        buffer_counts.append(counts)
+        buff_counts.append(counts)
         i = i + 1
             
-        if i < buffer:
+        if i < buff:
             continue
             
-        buffer_counts = np.array(buffer_counts)
+        buff_counts = np.array(buff_counts)
         
-        if buffer_counts.shape[0] != 0 :
-            BAF_counts_buffer = get_BAF_counts(buffer_counts)
-            BAF_counts_j += BAF_counts_buffer
+        if buff_counts.shape[0] != 0 :
+            BAF_counts_buff = get_BAF_counts(buff_counts)
+            BAF_counts_j += BAF_counts_buff
         
-        buffer_counts_filtered = normal_heterozygous_filter(buffer_counts)
+        buff_counts_filtered = normal_heterozygous_filter(buff_counts)
         
-        if buffer_counts_filtered.shape[0] != 0:
-            paired_counts_j = np.vstack((paired_counts_j, buffer_counts_filtered))
+        if buff_counts_filtered.shape[0] != 0:
+            paired_counts_j = np.vstack((paired_counts_j, buff_counts_filtered))
             
-        buffer_counts = []
+        buff_counts = []
         i = 0
         
-    buffer_counts = np.array(buffer_counts)
+    buff_counts = np.array(buff_counts)
     
-    if buffer_counts.shape[0] != 0 :
-        BAF_counts_buffer = get_BAF_counts(buffer_counts)
-        BAF_counts_j += BAF_counts_buffer
+    if buff_counts.shape[0] != 0 :
+        BAF_counts_buff = get_BAF_counts(buff_counts)
+        BAF_counts_j += BAF_counts_buff
     
-    buffer_counts_filtered = normal_heterozygous_filter(buffer_counts)
+    buff_counts_filtered = normal_heterozygous_filter(buff_counts)
     
-    if buffer_counts_filtered.shape[0] != 0:
-        paired_counts_j = np.vstack((paired_counts_j, buffer_counts_filtered))
+    if buff_counts_filtered.shape[0] != 0:
+        paired_counts_j = np.vstack((paired_counts_j, buff_counts_filtered))
         
     return (paired_counts_j, BAF_counts_j)

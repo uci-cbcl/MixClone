@@ -8,6 +8,9 @@ import numpy as np
 BAF_N_MIN = 0.4
 BAF_N_MAX = 0.6
 BAF_BINS = np.array(range(0, 100 + 1))/100.0
+SITES_NUM_MIN = 20
+BINOM_TEST_P = 0.5
+BINOM_TEST_THRED = 0.05
 
 BURN_IN = 10
 EPS = np.finfo(float).eps

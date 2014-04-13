@@ -13,6 +13,7 @@ Modified on 2014-04-09
 '''
 import sys
 import numpy as np
+from scipy.stats import binom
 
 from mixclone import constants
 
@@ -134,56 +135,35 @@ def get_BAF_counts(counts):
     
     return BAF_counts
 
-
-
-
-
-
-
-
-def tumor_LOH_test(counts, WES_flag):
-    BAF_T_MAX = constants.BAF_T_MAX
-    BAF_T_MIN = constants.BAF_T_MIN
-    LOH_FREC_MAX = constants.LOH_FREC_MAX
-    LOH_FREC_MIN = constants.LOH_FREC_MIN
-    
+def get_LOH_frac(counts):
     I = counts.shape[0]
     
-    if WES_flag == True:
-        sites_num_min = constants.SITES_NUM_MIN_WES
-    else:
-        sites_num_min = constants.SITES_NUM_MIN_WGS
-    
+    sites_num_min = constants.SITES_NUM_MIN
+    p = constants.BINOM_TEST_P
+    thred = constants.BINOM_TEST_THRED
+  
     if I < sites_num_min:
-        LOH_frec = -1
-        LOH_status = 'NONE'
+        LOH_frac = -1
         
-        return (LOH_frec, LOH_status)
-    
-    LOH_num = 0.0
-    
-    for i in xrange(0, I):
-        a_T = counts[i, 2]*1.0
-        b_T = counts[i, 3]*1.0
-        d_T = a_T + b_T
-        BAF_T = b_T/d_T
+        return LOH_frac
         
-        if BAF_T < BAF_T_MIN or BAF_T > BAF_T_MAX:
-            LOH_num = LOH_num + 1
+    a_T = counts[:, 2]
+    b_T = counts[:, 3]
+    d_T = a_T + b_T
+    l_T = np.min(counts[:, 2:4], axis = 1)
+    p_T = binom.cdf(l_T, d_T, p)
     
-    LOH_frec = LOH_num/I
+    LOH_num = np.where(p_T < thred)[0].shape[0]
+    LOH_frac = LOH_num*1.0/I
     
-    if LOH_frec < LOH_FREC_MIN:
-        LOH_status = 'FALSE'
-    elif LOH_frec >= LOH_FREC_MIN and LOH_frec < LOH_FREC_MAX:
-        LOH_status = 'UNCERTAIN'
-    elif LOH_frec >= LOH_FREC_MAX:
-        LOH_status = 'TRUE'
-    else:
-        LOH_status = 'ERROR'
-        
-    return (LOH_frec, LOH_status)
-    
+    return LOH_frac
+
+
+
+
+
+
+
 def remove_outliers(X):
     idx_keep = []
     
