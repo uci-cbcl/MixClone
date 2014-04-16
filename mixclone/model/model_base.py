@@ -56,7 +56,7 @@ class ProbabilisticModel(object):
         
     def run(self, max_iters, stop_value):
         trainer = self.model_trainer_class(self.priors, self.data, self.max_copynumber,
-                                    self.baseline_thred, max_iters, stop_value)
+                                           max_iters, stop_value)
         
         trainer.train()
         
@@ -79,14 +79,12 @@ class ProbabilisticModel(object):
 
 #JointSNVMix
 class ModelTrainer(object):
-    def __init__(self, priors, data, max_copynumber, baseline_thred, max_iters, stop_value):
+    def __init__(self, priors, data, max_copynumber, max_iters, stop_value):
         self.priors = priors
         
         self.data = data
         
         self.max_copynumber = max_copynumber
-        
-        self.baseline_thred = baseline_thred
         
         self.max_iters = max_iters
         
@@ -98,12 +96,16 @@ class ModelTrainer(object):
         
     def train(self):
         raise NotImplemented
-    
+
+    def _print_running_info(self, new_log_likelihood, old_log_likelihood, ll_change):
+        raise NotImplemented  
+
+    def _init_components(self):
+        raise NotImplemented
 
 class ConfigParameters(object):
-    def __init__(self, max_copynumber, baseline_thred):
-        self.max_copynumber = priors
-        self.baseline_thred = data
+    def __init__(self, max_copynumber):
+        self.max_copynumber = max_copynumber
         
         self._init_components()
         
@@ -150,12 +152,12 @@ class PriorParser(object):
         self.parser = ConfigParser()
         self.parser.read(priors_filename)
         
-        copynumber_tumor = get_copynumber_tumor(max_copynumber)
-        copynumber_tumor_num = get_copynumber_tumor_num(max_copynumber)
+        copynumber = get_copynumber(max_copynumber)
+        copynumber_num = get_copynumber_num(max_copynumber)
         
-        self.priors['omega'] = np.zeros(copynumber_tumor_num)
+        self.priors['omega'] = np.zeros(copynumber_num)
         
-        for i, copynumber in enumerate(copynumber_tumor):
-            self.priors['omega'][i] = self.parser.getfloat('omega', str(copynumber))
+        for i, cn in enumerate(copynumber):
+            self.priors['omega'][i] = self.parser.getfloat('omega', str(cn))
 
 

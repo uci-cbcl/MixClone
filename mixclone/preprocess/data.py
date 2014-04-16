@@ -114,16 +114,4 @@ class Data:
             print 'Error: No diploid segments found, existing...'
             sys.exit(1)
     
-    #def tumor_LOH_test(self, baseline_thred):
-    #    seg_num = self.data.seg_num
-    #    
-    #    for j in range(0, seg_num):
-    #        LOH_frac, LOH_status = tumor_LOH_test(self.data.segments[j].paired_counts, baseline_thred)
-    #        self.data.segments[j].LOH_frac = LOH_frac
-    #        self.data.segments[j].LOH_status = LOH_status
-            
-            
-            
-            
-            
-        
+
