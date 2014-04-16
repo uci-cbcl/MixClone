@@ -120,10 +120,7 @@ class BamToDataConverter:
             self.data.segments[j].BAF_counts = BAF_counts_j    
     
     def _get_LOH_frac(self):
-        seg_num = self.data.seg_num
-        
-        for j in range(0, seg_num):
-            self.data.segments[j].LOH_frac = get_LOH_frac(self.data.segments[j].paired_counts)
+        self.data.get_LOH_frac()
 
 #===============================================================================
 # Function

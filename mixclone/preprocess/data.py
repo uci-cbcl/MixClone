@@ -88,6 +88,41 @@ class Data:
             
             self.segments.append(segment_i)
             self.seg_num += 1
+    
+    def get_LOH_frac(self):        
+        for j in range(0, self.seg_num):
+            self.segments[j].LOH_frac = get_LOH_frac(self.segments[j].paired_counts)
+            
+    def get_LOH_status(self, baseline_thred):
+        for j in range(0, self.seg_num):
+            self.segments[j].LOH_status = get_LOH_status(self.segments[j].LOH_frac, baseline_thred)
+    
+    def compute_Lambda_S(self):
+        reads_depth_ratio = []
+        
+        for j in range(0, self.seg_num):
+            if self.segments[j].LOH_status == 'FALSE':
+                ratio = self.segments[j].tumor_reads_num*1.0/self.segments[j].normal_reads_num
+                reads_depth_ratio.append(ratio)
+                
+        reads_depth_ratio = np.array(reads_depth_ratio)
+        reads_depth_ratio = remove_outliers(reads_depth_ratio)
+        
+        if reads_depth_ratio.shape[0] != 0:
+            self.Lambda_S = reads_depth_ratio.mean()
+        else:
+            print 'Error: No diploid segments found, existing...'
+            sys.exit(1)
+    
+    #def tumor_LOH_test(self, baseline_thred):
+    #    seg_num = self.data.seg_num
+    #    
+    #    for j in range(0, seg_num):
+    #        LOH_frac, LOH_status = tumor_LOH_test(self.data.segments[j].paired_counts, baseline_thred)
+    #        self.data.segments[j].LOH_frac = LOH_frac
+    #        self.data.segments[j].LOH_status = LOH_status
+            
+            
             
             
             

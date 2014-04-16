@@ -158,11 +158,52 @@ def get_LOH_frac(counts):
     
     return LOH_frac
 
+def get_LOH_status(LOH_frac, baseline_thred):
+    LOH_FRAC_MAX = constants.LOH_FRAC_MAX
+    
+    if LOH_frac < baseline_thred:
+        LOH_status = 'FALSE'
+    elif LOH_frac >= baseline_thred and LOH_frac < LOH_FRAC_MAX:
+        LOH_status = 'UNCERTAIN'
+    elif LOH_frac >= LOH_FRAC_MAX:
+        LOH_status = 'TRUE'
+    else:
+        LOH_status = 'ERROR'
+        
+    return LOH_status
+    
 
-
-
-
-
+#def tumor_LOH_test(counts, baseline_thred):
+#    I = counts.shape[0]
+#    
+#    sites_num_min = constants.SITES_NUM_MIN
+#    p = constants.BINOM_TEST_P
+#    thred = constants.BINOM_TEST_THRED
+#  
+#    if I < sites_num_min:
+#        LOH_frac = -1
+#        
+#        return LOH_frac
+#        
+#    a_T = counts[:, 2]
+#    b_T = counts[:, 3]
+#    d_T = a_T + b_T
+#    l_T = np.min(counts[:, 2:4], axis = 1)
+#    p_T = binom.cdf(l_T, d_T, p)
+#    
+#    LOH_num = np.where(p_T < thred)[0].shape[0]
+#    LOH_frac = LOH_num*1.0/I
+#    
+#    if LOH_frac < baseline_thred:
+#        LOH_status = 'FALSE'
+#    elif LOH_frac >= baseline_thred and LOH_frac < LOH_FREC_MAX:
+#        LOH_status = 'UNCERTAIN'
+#    elif LOH_frac >= LOH_FREC_MAX:
+#        LOH_status = 'TRUE'
+#    else:
+#        LOH_status = 'ERROR'
+#    
+#    return (LOH_frac, LOH_status)
 
 def remove_outliers(X):
     idx_keep = []

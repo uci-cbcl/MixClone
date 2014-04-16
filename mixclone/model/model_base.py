@@ -32,6 +32,7 @@ import numpy as np
 
 from mixclone import constants
 from mixclone.preprocess.data import Data
+from mixclone.model.utils import *
 
 class ProbabilisticModel(object):
     def __init__(self, max_copynumber, baseline_thred):
@@ -140,5 +141,21 @@ class ModelLikelihood(object):
         raise NotImplemented
 
 
+#JointSNVMix        
+class PriorParser(object):
+    def __init__(self):                
+        self.priors = {}
+        
+    def read_priors(self, priors_filename, max_copynumber):                
+        self.parser = ConfigParser()
+        self.parser.read(priors_filename)
+        
+        copynumber_tumor = get_copynumber_tumor(max_copynumber)
+        copynumber_tumor_num = get_copynumber_tumor_num(max_copynumber)
+        
+        self.priors['omega'] = np.zeros(copynumber_tumor_num)
+        
+        for i, copynumber in enumerate(copynumber_tumor):
+            self.priors['omega'][i] = self.parser.getfloat('omega', str(copynumber))
 
 
