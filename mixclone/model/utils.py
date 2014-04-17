@@ -84,5 +84,75 @@ def get_MU_G(max_copynumber):
     
     return MU_G
 
+def get_allele_config(max_copynumber):
+    allele_config = []
+    
+    for cn in range(0, max_copynumber+1):
+        for M_num in range(0, (cn+2)/2):
+            P_num = cn - M_num
+                        
+            if P_num == 0 and M_num == 0:
+                h_T = 'NULL'
+            elif P_num == M_num:
+                h_T = 'P'*P_num + 'M'*M_num
+            else:
+                h_T = 'P'*P_num + 'M'*M_num + '/' + 'P'*M_num + 'M'*P_num
+                
+            allele_config.append(h_T)
+            
+    return allele_config
+    
+def get_allele_config_num(max_copynumber):
+    
+    return len(get_allele_config(max_copynumber))
+    
+def get_allele_config_CN(max_copynumber):
+    allele_config_CN = []
+    
+    for cn in range(0, max_copynumber+1):
+        for M_num in range(0, (cn+2)/2):
+            
+            allele_config_CN.append(cn)
+            
+    return allele_config_CN
 
+def check_GH_compat(g, h):
+    if g == 'NULL' and 'h' == 'NULL':
+        return True
+    
+    h_half = h.split('/')[0]
+    
+    P_num = h_half.count('P')
+    M_num = h_half.count('M')
+    A_num = g.count('A')
+    B_num = g.count('B')
+    
+    if A_num == P_num and B_num == M_num:
+        return True
+    elif A_num == M_num and B_num == P_num:
+        return True
+    else:
+        return False
+        
+def get_Q_GH(max_copynumber):
+    sigma = constants.SIGMA
+    
+    G = get_genotypes_num(max_copynumber)
+    H = get_allele_config_num(max_copynumber)
+    g_T = get_genotypes(max_copynumber)
+    h_T = get_allele_config(max_copynumber)
+    
+    Q_GH = np.ones((G, H))*sigma
+    
+    for h in range(0, H):
+        if h_T[h].count('/') == 0:
+            compat_num = 1
+        elif h_T[h].count('/') == 1:
+            compat_num = 2
+        
+        for g in range(0, G):
+            if check_GH_compat(g_T[g], h_T[h]) == True:
+                Q_GH[g, h] = (1 - sigma*(G - compat_num ))/compat_num 
+            
+    return Q_GH
 
