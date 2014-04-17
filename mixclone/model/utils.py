@@ -42,8 +42,8 @@ def get_copynumber_num(max_copynumber):
     
     return max_copynumber + 1
 
-def get_genotypes(max_copynumber):
-    genotypes = []
+def get_genotype(max_copynumber):
+    genotype = []
     
     for cn in range(0, max_copynumber+1):
         for B_num in range(0, cn+1):
@@ -53,13 +53,13 @@ def get_genotypes(max_copynumber):
             else:
                 g_T = 'A'*A_num + 'B'*B_num
             
-            genotypes.append(g_T)
+            genotype.append(g_T)
     
-    return genotypes
+    return genotype
 
-def get_genotypes_num(max_copynumber):
+def get_genotype_num(max_copynumber):
     
-    return len(get_genotypes(max_copynumber))
+    return len(get_genotype(max_copynumber))
     
 def get_MU_G(max_copynumber):
     empiri_BAF = constants.EMPIRI_BAF
@@ -137,9 +137,9 @@ def check_GH_compat(g, h):
 def get_Q_GH(max_copynumber):
     sigma = constants.SIGMA
     
-    G = get_genotypes_num(max_copynumber)
+    G = get_genotype_num(max_copynumber)
     H = get_allele_config_num(max_copynumber)
-    g_T = get_genotypes(max_copynumber)
+    g_T = get_genotype(max_copynumber)
     h_T = get_allele_config(max_copynumber)
     
     Q_GH = np.ones((G, H))*sigma

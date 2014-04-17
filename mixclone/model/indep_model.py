@@ -54,16 +54,21 @@ class IndepModelTrainer(ModelTrainer):
         
         self.model_likelihood = IndepModelLikelihood(self.data, self.config_parameters)
         
-#TODO    
+
 class IndepConfigParameters(ConfigParameters):
     def __init__(self, max_copynumber):
         ConfigParameters.__init__(self, max_copynumber)
         
     def _init_components(self):
-        self.copynumber = get_copynumber(max_copynumber)
-        self.copynumber_num = get_copynumber_num(max_copynumber)
-        self.allele_config = get_allele_config(max_copynumber)
-        self.allele_config_num = get_allele_config_num(max_copynumber)
+        self.copynumber = get_copynumber(self.max_copynumber)
+        self.copynumber_num = get_copynumber_num(self.max_copynumber)
+        self.genotype = get_genotype(self.max_copynumber)
+        self.genotype_num = get_genotype_num(self.max_copynumber)
+        self.allele_config = get_allele_config(self.max_copynumber)
+        self.allele_config_num = get_allele_config_num(self.max_copynumber)
+        self.allele_config_CN = get_allele_config_CN(self.max_copynumber)
+        self.MU_G = get_MU_G(self.max_copynumber)
+        self.Q_GH = get_Q_GH(self.max_copynumber)
 
 
 class IndepModelParameters(ModelParameters):
