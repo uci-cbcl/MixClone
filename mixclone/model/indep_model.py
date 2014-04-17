@@ -128,6 +128,7 @@ class IndepModelLikelihood(ModelLikelihood):
         return ll_CNA_j
     
     def _ll_LOH_by_seg(self, h, phi, j):
+        Q_GH = np.array(self.config_parameters.Q_GH)
         eta = constants.ETA
         c_N = constants.COPY_NUMBER_NORMAL
         c_H = self.config_parameters.allele_config_CN[h]
@@ -138,7 +139,7 @@ class IndepModelLikelihood(ModelLikelihood):
         b_T_j = self.data.segments[j].paired_counts[:, 3]
         d_T_j = a_T_j + b_T_j
         
-        ll = np.log(Q_GH[h]) + log_binomial_likelihood(b_T_j, d_T_j, mu_E)
+        ll = np.log(Q_GH[:, h]) + log_binomial_likelihood(b_T_j, d_T_j, mu_E)
         
         ll_LOH_j = np.logaddexp.reduce(ll, axis=1).sum()
         
