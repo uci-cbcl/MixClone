@@ -135,7 +135,8 @@ class LatentVariables(object):
 
 
 class ModelLikelihood(object):
-    def __init__(self, data, config_parameters):
+    def __init__(self, priors, data, config_parameters):
+        self.priors = priors
         self.data = data
         self.config_parameters = config_parameters
         

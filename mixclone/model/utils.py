@@ -27,6 +27,43 @@ from scipy.special import gammaln
 
 from mixclone import constants
 
+#JointSNVMix
+def log_space_normalise_rows_annealing(log_X, eta):
+    nrows = log_X.shape[0]
+    shape = ( nrows, 1 )
+    log_X = log_X*eta
+    
+    log_norm_const = np.logaddexp.reduce( log_X, axis=1 )
+    log_norm_const = log_norm_const.reshape( shape )
+
+    log_X = log_X - log_norm_const
+    
+    X = np.exp( log_X )
+    
+    dt = X.dtype
+    eps = np.finfo( dt ).eps
+    
+    X[X <= eps] = 0.
+    
+    return X
+
+#JointSNVMix
+def log_binomial_likelihood(k, n, mu):
+    column_shape = (k.size, 1)
+    k = k.reshape(column_shape)
+    n = n.reshape(column_shape)
+    
+    row_shape = (1, mu.size)
+    mu = mu.reshape(row_shape)
+    
+    return k * np.log(mu) + (n - k) * np.log(1 - mu)
+
+def log_poisson_likelihood(k, Lambda):
+    row_shape = (1, Lambda.size)
+    Lambda = Lambda.reshape(row_shape)
+    
+    return k * np.log(Lambda) - Lambda - gammaln(k + 1)
+
 def get_omega(max_copynumber):
     tau = constants.TAU
     
@@ -155,4 +192,12 @@ def get_Q_GH(max_copynumber):
                 Q_GH[g, h] = (1 - sigma*(G - compat_num ))/compat_num 
             
     return Q_GH
+
+def get_c_E(c_N, c_T, phi):
+    
+    return (1 - phi)*c_N + phi*c_T
+    
+def get_mu_E(mu_N, mu_G, c_N, c_H, phi):
+    
+    return ((1 - phi)*c_N*mu_N + phi*c_H*mu_G)/((1 - phi)*c_N + phi*c_H)
 

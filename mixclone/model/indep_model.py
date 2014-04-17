@@ -79,10 +79,11 @@ class IndepModelParameters(ModelParameters):
         J = self.data.seg_num
         
         parameters = {}
-        
         parameters['phi'] = np.random.random(J)
         
-#TODO        
+        self.parameters = parameters
+        
+        
 class IndepLatentVariables(LatentVariables):
     def __init__(self, data, config_parameters):
         LatentVariables.__init__(self, data, config_parameters)
@@ -90,7 +91,58 @@ class IndepLatentVariables(LatentVariables):
         self._init_components()
     
     def _init_components(self):
+        J = self.data.seg_num
+        H = self.config_parameters.allele_config_num
         
+        latent_variables = {}
+        latent_variables['H'] = np.random.randint(0, H, J)
+        
+        self.latent_variables = latent_variables
+
+
+class IndepModelLikelihood(ModelLikelihood):
+    def __init__(self, priors, data, config_parameters):
+        ModelLikelihood.__init__(self, priors, data, config_parameters)
+    
+    def ll_by_seg(self, h, phi, j):
+        ll = 0
+        
+        ll += self._ll_CNA_by_seg(h, phi, j)
+        ll += self._ll_LOH_by_seg(h, phi, j)
+        
+        return ll
+        
+    def _ll_CNA_by_seg(self, h, phi, j):
+        c_N = constants.COPY_NUMBER_NORMAL
+        c_S = constants.COPY_NUMBER_BASELINE
+        c_T = self.config_parameters.allele_config_CN[h]
+        D_N_j = self.data.segments[j].normal_reads_num
+        D_T_j = self.data.segments[j].tumor_reads_num
+        Lambda_S = self.data.Lambda_S
+        
+        c_E_j = get_c_E(c_N, c_T, phi)
+        lambda_E_j = np.array(D_N_j*c_E_j*Lambda_S/c_S)
+        
+        ll_CNA_j = log_poisson_likelihood(D_T_j, lambda_E_j)
+        
+        return ll_CNA_j
+    
+    def _ll_LOH_by_seg(self, h, phi, j):
+        eta = constants.ETA
+        c_N = constants.COPY_NUMBER_NORMAL
+        c_H = self.config_parameters.allele_config_CN[h]
+        mu_N = constants.MU_N
+        mu_G = np.array(self.config_parameters.MU_G)
+        mu_E = get_mu_E(mu_N, mu_G, c_N, c_H, phi)
+        a_T_j = self.data.segments[j].paired_counts[:, 2]
+        b_T_j = self.data.segments[j].paired_counts[:, 3]
+        d_T_j = a_T_j + b_T_j
+        
+        ll = np.log(Q_GH[h]) + log_binomial_likelihood(b_T_j, d_T_j, mu_E)
+        
+        ll_LOH_j = np.logaddexp.reduce(ll, axis=1).sum()
+        
+        return ll_LOH_j
     
     
     
