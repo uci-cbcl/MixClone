@@ -13,6 +13,10 @@ centromere_starts['chr1'] = 121237000
 centromere_ends['chr1'] = 123476957
 heterochromatin_starts['chr1'] = 123476957
 heterochromatin_ends['chr1'] = 141477000
+q21_1_starts['chr1'] = 142400000
+q21_1_ends['chr1'] = 148000000
+excludes_starts['chr1'] = 121237000
+excludes_ends['chr1'] = 148000000
 
 chrom_list = ['chr1', 'chr2', 'chr3', 'chr4', 'chr5', 'chr6', 'chr7', 'chr8',
               'chr9', 'chr10', 'chr11', 'chr12', 'chr13', 'chr14', 'chr15',
@@ -149,7 +153,7 @@ def main():
         p_paternal = 0.5
         pos = np.random.random_integers(start, end - reads_len, 1)[0]
         
-        if pos >= centromere_starts[chrom] and pos <= heterochromatin_ends[chrom]:
+        if pos >= excludes_starts[chrom] and pos <= excludes_ends[chrom]:
             continue
         
         if np.random.rand() <= 0.5:
