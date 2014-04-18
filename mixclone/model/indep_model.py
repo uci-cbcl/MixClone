@@ -60,7 +60,7 @@ class IndepModelTrainer(ModelTrainer):
         for j in range(0, seg_num):
             if self.data.segments[j].LOH_status == 'NONE':
                 continue
-            elif self.data.segments[j].LOH_status == 'FALSE':
+            elif self.data.segments[j].LOH_status == 'FALSE':#bug
                 self.data.segments[j].allele_type = constants.ALLELE_TYPE_BASELINE
                 self.data.segments[j].copy_number = constants.COPY_NUMBER_BASELINE
                 continue
