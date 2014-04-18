@@ -62,12 +62,8 @@ class ProbabilisticModel(object):
         
         self.data = trainer.data
         
-        #self.model_parameters = trainer.model_parameters
-        
-        #self.log_likelihood = trainer.log_likelihood
-        
     def write_results(self, filename_base):
-        results_file_name = self.filename_base + '.MixClone.results.pkl'
+        results_file_name = filename_base + '.MixClone.results.pkl'
         outfile = open(results_file_name, 'wb')
         pkl.dump(self.data, outfile, protocol=2)
         

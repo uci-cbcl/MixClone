@@ -36,7 +36,7 @@ class Segment:
         self.BAF_counts = None
         self.copy_number = -1
         self.allele_type = 'NONE'
-        self.tumor_prev = -1
+        self.subclone_prev = -1
         
 
 class Data:

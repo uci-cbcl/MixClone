@@ -40,7 +40,7 @@ class IndepProbabilisticModel(ProbabilisticModel):
     def _init_components(self):
         self.model_trainer_class = IndepModelTrainer
     
-#TODO
+
 class IndepModelTrainer(ModelTrainer):
     def __init__(self, priors, data, max_copynumber, max_iters, stop_value):
         ModelTrainer.__init__(self, priors, data, max_copynumber, max_iters, stop_value)
@@ -69,7 +69,7 @@ class IndepModelTrainer(ModelTrainer):
             
             self.data.segments[j].allele_type = h_j
             self.data.segments[j].copy_number = c_H_j
-            self.data.segments[j].tumor_prev = phi_j
+            self.data.segments[j].subclone_prev = phi_j
             
     def train_by_seg(self, j):
         H = self.config_parameters.allele_config_num
@@ -128,7 +128,7 @@ class IndepModelTrainer(ModelTrainer):
         print "Segment : ", self.data.segments[j].name
         print "Estimated copy number: ", c_H_j
         print "Estimated allele type : ", h_j
-        print "Estimated tumor cellular prevalence : ", phi_j
+        print "Estimated subclone cellular prevalence : ", phi_j
         print "Log-likelihood : ", ll_j
         sys.stdout.flush()
         
