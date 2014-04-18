@@ -161,7 +161,9 @@ def get_LOH_frac(counts):
 def get_LOH_status(LOH_frac, baseline_thred):
     LOH_FRAC_MAX = constants.LOH_FRAC_MAX
     
-    if LOH_frac < baseline_thred:
+    if LOH_frac == -1:
+        LOH_status = 'NONE'
+    elif LOH_frac < baseline_thred:
         LOH_status = 'FALSE'
     elif LOH_frac >= baseline_thred and LOH_frac < LOH_FRAC_MAX:
         LOH_status = 'UNCERTAIN'

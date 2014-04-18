@@ -52,7 +52,85 @@ class IndepModelTrainer(ModelTrainer):
         
         self.latent_variables = IndepLatentVariables(self.data, self.config_parameters)
         
-        self.model_likelihood = IndepModelLikelihood(self.data, self.config_parameters)
+        self.model_likelihood = IndepModelLikelihood(self.priors, self.data, self.config_parameters)
+    
+    def train(self):
+        seg_num = self.data.seg_num
+        
+        for j in range(0, seg_num):
+            if self.data.segments[j].LOH_status == 'NONE':
+                continue
+            elif self.data.segments[j].LOH_status == 'FALSE':
+                self.data.segments[j].allele_type = constants.ALLELE_TYPE_BASELINE
+                self.data.segments[j].copy_number = constants.COPY_NUMBER_BASELINE
+                continue
+            
+            h_j, c_H_j, phi_j = self.train_by_seg(j)
+            
+            self.data.segments[j].allele_type = h_j
+            self.data.segments[j].copy_number = c_H_j
+            self.data.segments[j].tumor_prev = phi_j
+            
+    def train_by_seg(self, j):
+        H = self.config_parameters.allele_config_num
+        ll_lst = []
+        phi_lst = []
+        
+        for h in range(0, H):
+            ll, phi = self.bisec_search_ll(j, h)
+            ll_lst.append(ll)
+            phi_lst.append(phi)
+            
+            h_ = self.config_parameters.allele_config[h]
+            c_H_ = self.config_parameters.allele_config_CN[h]
+            
+            self._print_running_info(j, h_, c_H_, phi, ll)
+            
+        ll_lst = np.array(ll_lst)
+        idx_optimum = ll_lst.argmax()
+        
+        h_optimum = self.config_parameters.allele_config[idx_optimum]
+        c_H_optimum = self.config_parameters.allele_config_CN[idx_optimum]
+        phi_optimum = phi_lst[idx_optimum]
+        
+        return (h_optimum, c_H_optimum, phi_optimum)
+        
+    def bisec_search_ll(self, j, h):
+        phi_start = 0.01
+        phi_end = 0.99
+        phi_stop = 1e-5
+        phi_change = 1
+        
+        while phi_change > phi_stop:
+            phi_left = phi_start + (phi_end - phi_start)*1/3
+            phi_right = phi_start + (phi_end - phi_start)*2/3
+            
+            ll_left = self.model_likelihood.ll_by_seg(h, phi_left, j)
+            ll_right = self.model_likelihood.ll_by_seg(h, phi_right, j)
+            
+            if ll_left >= ll_right:
+                phi_change = phi_end - phi_right
+                phi_end = phi_right
+            else:
+                phi_change = phi_left - phi_start
+                phi_start = phi_left
+                            
+        phi_optimum = (phi_start + phi_end)/2
+        ll_optimum = self.model_likelihood.ll_by_seg(h, phi_optimum, j)
+        
+        return (ll_optimum, phi_optimum)
+
+    def _print_running_info(self, j, h_j, c_H_j, phi_j, ll_j):
+        print "#" * 100
+        print "# Running Info."
+        print "#" * 100
+        print "Model : independent"
+        print "Segment : ", self.data.segments[j].name
+        print "Estimated copy number: ", c_H_j
+        print "Estimated allele type : ", h_j
+        print "Estimated tumor cellular prevalence : ", phi_j
+        print "Log-likelihood : ", ll_j
+        sys.stdout.flush()
         
 
 class IndepConfigParameters(ConfigParameters):
@@ -115,15 +193,15 @@ class IndepModelLikelihood(ModelLikelihood):
     def _ll_CNA_by_seg(self, h, phi, j):
         c_N = constants.COPY_NUMBER_NORMAL
         c_S = constants.COPY_NUMBER_BASELINE
-        c_T = self.config_parameters.allele_config_CN[h]
+        c_H = self.config_parameters.allele_config_CN[h]
         D_N_j = self.data.segments[j].normal_reads_num
         D_T_j = self.data.segments[j].tumor_reads_num
         Lambda_S = self.data.Lambda_S
         
-        c_E_j = get_c_E(c_N, c_T, phi)
+        c_E_j = get_c_E(c_N, c_H, phi)
         lambda_E_j = np.array(D_N_j*c_E_j*Lambda_S/c_S)
         
-        ll_CNA_j = log_poisson_likelihood(D_T_j, lambda_E_j)
+        ll_CNA_j = log_poisson_likelihood(D_T_j, lambda_E_j).sum()
         
         return ll_CNA_j
     
