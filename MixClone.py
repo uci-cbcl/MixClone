@@ -72,9 +72,9 @@ parser_run_model.add_argument('filename_base',
 parser_run_model.add_argument('--max_copynumber', default=4, type=int,
                             help='''Maximum copy number of each segment allows to take. Default is 4.''')
 
-parser_run_model.add_argument('--baseline_thred', default=0.08, type=float,
+parser_run_model.add_argument('--baseline_thred', default=0.09, type=float,
                             help='''The threshold of LOH SNP sites fraction within each segment to
-                            define the segment as baseline. Default is 0.08.''')
+                            define the segment as baseline. Default is 0.09.''')
 
 parser_run_model.add_argument('--priors', default=None, type=str,
                              help='''File of the prior distribution. If not provided,
