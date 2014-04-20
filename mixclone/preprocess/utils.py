@@ -175,6 +175,8 @@ def get_LOH_status(LOH_frac, baseline_thred):
     return LOH_status
 
 def remove_outliers(X):
+    std_thred = 0.05
+    
     idx_keep = []
     
     n = X.shape[0]
@@ -185,5 +187,9 @@ def remove_outliers(X):
             
     X = X[idx_keep]
     
-    return X
+    if X.std() < std_thred:
+        return X
+    else:
+        return remove_outliers(X)
+        
     
