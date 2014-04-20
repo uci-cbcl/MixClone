@@ -26,6 +26,7 @@ BINOM_TEST_THRED = 0.025
 BURN_IN = 10
 EPS = np.finfo(float).eps
 ETA = 1.0
+INF = float('inf')
 
 TAU = 500
 SIGMA = 0.0001

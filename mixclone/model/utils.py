@@ -170,6 +170,10 @@ def check_GH_compat(g, h):
         return True
     else:
         return False
+    
+def check_balance_allele_type(h_T):
+    
+    return h_T.count('/') == 0
         
 def get_Q_GH(max_copynumber):
     sigma = constants.SIGMA

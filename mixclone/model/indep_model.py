@@ -60,16 +60,13 @@ class IndepModelTrainer(ModelTrainer):
         for j in range(0, seg_num):
             if self.data.segments[j].LOH_status == 'NONE':
                 continue
-            elif self.data.segments[j].LOH_status == 'FALSE':#bug
-                self.data.segments[j].allele_type = constants.ALLELE_TYPE_BASELINE
-                self.data.segments[j].copy_number = constants.COPY_NUMBER_BASELINE
-                continue
             
             h_j, c_H_j, phi_j = self.train_by_seg(j)
             
             self.data.segments[j].allele_type = h_j
             self.data.segments[j].copy_number = c_H_j
-            self.data.segments[j].subclone_prev = phi_j
+            if h_j != constants.ALLELE_TYPE_BASELINE:
+                self.data.segments[j].subclone_prev = phi_j
             
     def train_by_seg(self, j):
         H = self.config_parameters.allele_config_num
@@ -77,6 +74,13 @@ class IndepModelTrainer(ModelTrainer):
         phi_lst = []
         
         for h in range(0, H):
+            h_T = self.config_parameters.allele_config[h]
+            
+            if self.data.segments[j].LOH_status == 'FALSE' and check_balance_allele_type(h_T) == False:
+                ll_lst.append(-1*constants.INF)
+                phi_lst.append(-1)
+                continue
+            
             ll, phi = self.bisec_search_ll(j, h)
             ll_lst.append(ll)
             phi_lst.append(phi)
