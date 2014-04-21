@@ -21,8 +21,8 @@ from mixclone.model.model_base import *
 from mixclone.model.utils import *
 
 class IndepProbabilisticModel(ProbabilisticModel):
-    def __init__(self, max_copynumber, baseline_thred):
-        ProbabilisticModel.__init__(self, max_copynumber, baseline_thred)
+    def __init__(self, max_copynumber, subclone_num, baseline_thred):
+        ProbabilisticModel.__init__(self, max_copynumber, subclone_num, baseline_thred)
         
     def read_priors(self, priors_filename):
         if priors_filename != None:
@@ -42,11 +42,11 @@ class IndepProbabilisticModel(ProbabilisticModel):
     
 
 class IndepModelTrainer(ModelTrainer):
-    def __init__(self, priors, data, max_copynumber, max_iters, stop_value):
-        ModelTrainer.__init__(self, priors, data, max_copynumber, max_iters, stop_value)
+    def __init__(self, priors, data, max_copynumber, subclone_num, max_iters, stop_value):
+        ModelTrainer.__init__(self, priors, data, max_copynumber, subclone_num, max_iters, stop_value)
 
     def _init_components(self):
-        self.config_parameters = IndepConfigParameters(self.max_copynumber)
+        self.config_parameters = IndepConfigParameters(self.max_copynumber, self.subclone_num)
         
         self.model_parameters = IndepModelParameters(self.priors, self.data, self.config_parameters)
         
@@ -138,8 +138,8 @@ class IndepModelTrainer(ModelTrainer):
         
 
 class IndepConfigParameters(ConfigParameters):
-    def __init__(self, max_copynumber):
-        ConfigParameters.__init__(self, max_copynumber)
+    def __init__(self, max_copynumber, subclone_num):
+        ConfigParameters.__init__(self, max_copynumber, subclone_num)
         
     def _init_components(self):
         self.copynumber = get_copynumber(self.max_copynumber)

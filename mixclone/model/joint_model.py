@@ -21,8 +21,8 @@ from mixclone.model.model_base import *
 from mixclone.model.utils import *
 
 class JointProbabilisticModel(ProbabilisticModel):
-    def __init__(self, max_copynumber, baseline_thred):
-        ProbabilisticModel.__init__(self, max_copynumber, baseline_thred)
+    def __init__(self, max_copynumber, subclone_num, baseline_thred):
+        ProbabilisticModel.__init__(self, max_copynumber, subclone_num, baseline_thred)
         
     def read_priors(self, priors_filename):
         if priors_filename != None:
@@ -42,11 +42,11 @@ class JointProbabilisticModel(ProbabilisticModel):
 
 
 class JointModelTrainer(ModelTrainer):
-    def __init__(self, priors, data, max_copynumber, max_iters, stop_value):
-        ModelTrainer.__init__(self, priors, data, max_copynumber, max_iters, stop_value)
+    def __init__(self, priors, data, max_copynumber, subclone_num, max_iters, stop_value):
+        ModelTrainer.__init__(self, priors, data, max_copynumber, subclone_num, max_iters, stop_value)
 
     def _init_components(self):
-        self.config_parameters = JointConfigParameters(self.max_copynumber)
+        self.config_parameters = JointConfigParameters(self.max_copynumber, self.subclone_num)
         
         self.model_parameters = JointModelParameters(self.priors, self.data, self.config_parameters)
         

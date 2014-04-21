@@ -19,7 +19,7 @@ from mixclone.model.indep_model import IndepProbabilisticModel
 
 def run_model(args):
     # run the independent model
-    indep_model = IndepProbabilisticModel(args.max_copynumber, args.baseline_thred)
+    indep_model = IndepProbabilisticModel(args.max_copynumber, args.subclone_num, args.baseline_thred)
     indep_model.read_priors(args.priors)
     indep_model.read_data(args.filename_base)
     indep_model.preprocess()
