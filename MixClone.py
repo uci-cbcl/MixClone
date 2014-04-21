@@ -102,15 +102,6 @@ parser_postprocess = subparsers.add_parser('postprocess',
 parser_postprocess.add_argument('filename_base',
                             help='''Base name of files created.''')
 
-parser_postprocess.add_argument('--all', default=False, action='store_true',
-                          help='''Extract all the result files. Default is False.''')
-
-parser_postprocess.add_argument('--paired_counts', default=False, action='store_true',
-                          help='''Extract the paired counts file. Default is False.''')
-
-parser_postprocess.add_argument('--segments', default=False, action='store_true',
-                          help='''Extract the segments file. Default is False.''')
-
 parser_postprocess.add_argument('--Data', default=False, action='store_true',
                           help='''Extract from *.Mixclone.data.pkl instead of *.Mixclone.results.pkl.
                           Default is False.''')

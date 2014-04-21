@@ -31,16 +31,13 @@ def run_postprocess(args):
     
     infile = open(file_name, 'rb')
     data = pkl.load(infile)
-    
-    if args.paired_counts == True or args.all == True:
-        extract_paired_counts(data, args.filename_base)
-    
-    if args.segments == True or args.all == True:
-        extract_segments(data, args.filename_base)
-        
-        
     infile.close()
     
+    extract_paired_counts(data, args.filename_base)
+    
+    extract_segments(data, args.filename_base)
+    
+        
 def extract_paired_counts(data, filename_base):
     counts_file_name = filename_base + '.MixClone.counts'
     outfile = open(counts_file_name, 'w')
