@@ -108,7 +108,9 @@ class ConfigParameters(object):
         self.subclone_num = subclone_num
         
         self._init_components()
-        
+
+    def _init_components(self):
+        raise NotImplemented
 
 class ModelParameters(object):
     def __init__(self, priors, data, config_parameters):
@@ -117,9 +119,6 @@ class ModelParameters(object):
         self.config_parameters = config_parameters
         
         self._init_parameters()
-    
-    def update(self, sufficient_statistics):
-        raise NotImplemented
 
     def _init_parameters(self):
         raise NotImplemented
@@ -130,7 +129,7 @@ class LatentVariables(object):
         self.data = data
         self.config_parameters = config_parameters
 
-    def update(self, parameters):
+    def _init_components(self):
         raise NotImplemented
 
 

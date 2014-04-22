@@ -197,13 +197,14 @@ class IndepModelLikelihood(ModelLikelihood):
     def _ll_CNA_by_seg(self, h, phi, j):
         c_N = constants.COPY_NUMBER_NORMAL
         c_S = constants.COPY_NUMBER_BASELINE
-        c_H = self.config_parameters.allele_config_CN[h]
+        c_H = np.array(self.config_parameters.allele_config_CN[h])
         D_N_j = self.data.segments[j].normal_reads_num
         D_T_j = self.data.segments[j].tumor_reads_num
+        phi = np.array(phi)
         Lambda_S = self.data.Lambda_S
         
         c_E_j = get_c_E(c_N, c_H, phi)
-        lambda_E_j = np.array(D_N_j*c_E_j*Lambda_S/c_S)
+        lambda_E_j = D_N_j*c_E_j*Lambda_S/c_S
         
         ll_CNA_j = log_poisson_likelihood(D_T_j, lambda_E_j).sum()
         
@@ -211,7 +212,6 @@ class IndepModelLikelihood(ModelLikelihood):
     
     def _ll_LOH_by_seg(self, h, phi, j):
         Q_GH = np.array(self.config_parameters.Q_GH)
-        eta = constants.ETA
         c_N = constants.COPY_NUMBER_NORMAL
         c_H = self.config_parameters.allele_config_CN[h]
         mu_N = constants.MU_N

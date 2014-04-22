@@ -61,8 +61,8 @@ class JointModelTrainer(ModelTrainer):
 
 
 class JointConfigParameters(ConfigParameters):
-    def __init__(self, max_copynumber):
-        ConfigParameters.__init__(self, max_copynumber)
+    def __init__(self, max_copynumber, subclone_num):
+        ConfigParameters.__init__(self, max_copynumber, subclone_num)
         
     def _init_components(self):
         self.copynumber = get_copynumber(self.max_copynumber)
@@ -76,7 +76,99 @@ class JointConfigParameters(ConfigParameters):
         self.Q_GH = get_Q_GH(self.max_copynumber)
         
         
+class JointModelParameters(ModelParameters):
+    def __init__(self, priors, data, config_parameters):
+        ModelParameters.__init__(self, priors, data, config_parameters)
+        
+    def _init_parameters(self):
+        J = self.data.seg_num
+        H = self.config_parameters.allele_config_num
+        K = self.config_parameters.subclone_num
+        
+        parameters = {}
+        parameters['rho'] = np.ones((J, H))*1.0/H
+        parameters['pi'] = np.ones(K)*1.0/K
+        parameters['phi'] = np.random.random(K)
+
+        self.parameters = parameters
 
 
+class JointLatentVariables(LatentVariables):
+    def __init__(self, data, config_parameters):
+        LatentVariables.__init__(self, data, config_parameters)
+        
+        self._init_components()
+    
+    def _init_components(self):
+        J = self.data.seg_num
+        H = self.config_parameters.allele_config_num
+        K = self.config_parameters.subclone_num
+        
+        sufficient_statistics = {}
+        sufficient_statistics['psi'] = np.zeros((J, H))
+        sufficient_statistics['kappa'] = np.zeros((J, K))
+        
+        for j in range(0, J):
+            sufficient_statistics['psi'][j] = rand_probs(H)
+            sufficient_statistics['kappa'][j] = rand_probs(K)
+    
+        self.sufficient_statistics = sufficient_statistics
 
 
+class JointModelLikelihood(ModelLikelihood):
+    def __init__(self, priors, data, config_parameters):
+        ModelLikelihood.__init__(self, priors, data, config_parameters)
+        
+    def ll_by_seg(self, model_parameters, j):
+        H = self.config_parameters.allele_config_num
+        K = self.config_parameters.subclone_num
+        
+        ll = np.zeros((K, H))
+        
+        ll += self._ll_CNA_by_seg(model_parameters, j)
+        ll += self._ll_LOH_by_seg(model_parameters, j)
+        
+        return ll
+        
+    def _ll_CNA_by_seg(self, model_parameters, j):
+        H = self.config_parameters.allele_config_num
+        K = self.config_parameters.subclone_num
+        
+        phi = np.array(model_parameters.parameters['phi'])
+        
+        c_N = constants.COPY_NUMBER_NORMAL
+        c_S = constants.COPY_NUMBER_BASELINE
+        c_H = np.array(self.config_parameters.allele_config_CN)
+        D_N_j = self.data.segments[j].normal_reads_num
+        D_T_j = self.data.segments[j].tumor_reads_num
+        Lambda_S = self.data.Lambda_S
+        
+        c_E_j = get_c_E(c_N, c_H, phi)
+        lambda_E_j = D_N_j*c_E_j*Lambda_S/c_S
+        
+        ll_CNA_j = log_poisson_likelihood(D_T_j, lambda_E_j)
+        
+        return ll_CNA_j
+        
+    def _ll_LOH_by_seg(self, model_parameters, j):
+        H = self.config_parameters.allele_config_num
+        K = self.config_parameters.subclone_num
+        Q_GH = np.array(self.config_parameters.Q_GH)
+        
+        phi = np.array(model_parameters.parameters['phi'])
+        
+        c_N = constants.COPY_NUMBER_NORMAL
+        c_H = np.array(self.config_parameters.allele_config_CN)
+        mu_N = constants.MU_N
+        mu_G = np.array(self.config_parameters.MU_G)
+        mu_E = get_mu_E_multi(mu_N, mu_G, c_N, c_H, phi)
+        a_T_j = self.data.segments[j].paired_counts[:, 2]
+        b_T_j = self.data.segments[j].paired_counts[:, 3]
+        d_T_j = a_T_j + b_T_j
+        
+        #ll = np.log(Q_GH[:, h]) + log_binomial_likelihood_multi(b_T_j, d_T_j, mu_E)
+        
+        
+        
+        
+        
