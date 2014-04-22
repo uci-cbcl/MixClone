@@ -164,8 +164,8 @@ def get_allele_config_CN(max_copynumber):
             
     return allele_config_CN
 
-def check_GH_compat(g, h):
-    if g == 'NULL' and 'h' == 'NULL':
+def check_HG_compat(h, g):
+    if h == 'NULL' and g == 'NULL':
         return True
     
     h_half = h.split('/')[0]
@@ -185,8 +185,8 @@ def check_GH_compat(g, h):
 def check_balance_allele_type(h_T):
     
     return h_T.count('/') == 0
-        
-def get_Q_GH(max_copynumber):
+
+def get_Q_HG(max_copynumber):
     sigma = constants.SIGMA
     
     G = get_genotype_num(max_copynumber)
@@ -194,7 +194,7 @@ def get_Q_GH(max_copynumber):
     g_T = get_genotype(max_copynumber)
     h_T = get_allele_config(max_copynumber)
     
-    Q_GH = np.ones((G, H))*sigma
+    Q_HG = np.ones((H, G))*sigma
     
     for h in range(0, H):
         if h_T[h].count('/') == 0:
@@ -203,11 +203,11 @@ def get_Q_GH(max_copynumber):
             compat_num = 2
         
         for g in range(0, G):
-            if check_GH_compat(g_T[g], h_T[h]) == True:
-                Q_GH[g, h] = (1 - sigma*(G - compat_num ))/compat_num 
+            if check_HG_compat(h_T[h], g_T[g]) == True:
+                Q_HG[h, g] = (1 - sigma*(G - compat_num ))/compat_num 
             
-    return Q_GH
-    
+    return Q_HG
+
 def get_c_E(c_N, c_T, phi):
     column_shape = (phi.size, 1)
     row_shape = (1, c_T.size)

@@ -73,7 +73,7 @@ class JointConfigParameters(ConfigParameters):
         self.allele_config_num = get_allele_config_num(self.max_copynumber)
         self.allele_config_CN = get_allele_config_CN(self.max_copynumber)
         self.MU_G = get_MU_G(self.max_copynumber)
-        self.Q_GH = get_Q_GH(self.max_copynumber)
+        self.Q_HG = get_Q_HG(self.max_copynumber)
         
         
 class JointModelParameters(ModelParameters):
@@ -154,7 +154,7 @@ class JointModelLikelihood(ModelLikelihood):
         H = self.config_parameters.allele_config_num
         K = self.config_parameters.subclone_num
         G = self.config_parameters.genotype_num
-        Q_GH = np.array(self.config_parameters.Q_GH).reshape(1, 1, H, G)
+        Q_HG = np.array(self.config_parameters.Q_HG).reshape(1, 1, H, G)
         
         phi = np.array(model_parameters.parameters['phi'])
         
@@ -167,7 +167,7 @@ class JointModelLikelihood(ModelLikelihood):
         b_T_j = self.data.segments[j].paired_counts[:, 3]
         d_T_j = a_T_j + b_T_j
         
-        ll = np.log(Q_GH) + log_binomial_likelihood_joint(b_T_j, d_T_j, mu_E)
+        ll = np.log(Q_HG) + log_binomial_likelihood_joint(b_T_j, d_T_j, mu_E)
         ll_LOH_j = np.logaddexp.reduce(ll, axis=3).sum(axis=0)
         
         return ll_LOH_j

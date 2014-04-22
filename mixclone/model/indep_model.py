@@ -150,7 +150,7 @@ class IndepConfigParameters(ConfigParameters):
         self.allele_config_num = get_allele_config_num(self.max_copynumber)
         self.allele_config_CN = get_allele_config_CN(self.max_copynumber)
         self.MU_G = get_MU_G(self.max_copynumber)
-        self.Q_GH = get_Q_GH(self.max_copynumber)
+        self.Q_HG = get_Q_HG(self.max_copynumber)
 
 
 class IndepModelParameters(ModelParameters):
@@ -211,7 +211,7 @@ class IndepModelLikelihood(ModelLikelihood):
         return ll_CNA_j
     
     def _ll_LOH_by_seg(self, h, phi, j):
-        Q_GH = np.array(self.config_parameters.Q_GH)
+        Q_HG = np.array(self.config_parameters.Q_HG)
         c_N = constants.COPY_NUMBER_NORMAL
         c_H = self.config_parameters.allele_config_CN[h]
         mu_N = constants.MU_N
@@ -221,7 +221,7 @@ class IndepModelLikelihood(ModelLikelihood):
         b_T_j = self.data.segments[j].paired_counts[:, 3]
         d_T_j = a_T_j + b_T_j
         
-        ll = np.log(Q_GH[:, h]) + log_binomial_likelihood(b_T_j, d_T_j, mu_E)
+        ll = np.log(Q_HG[h, :]) + log_binomial_likelihood(b_T_j, d_T_j, mu_E)
         
         ll_LOH_j = np.logaddexp.reduce(ll, axis=1).sum()
         
