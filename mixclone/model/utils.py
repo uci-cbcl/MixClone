@@ -59,7 +59,7 @@ def log_binomial_likelihood(k, n, mu):
     return k * np.log(mu) + (n - k) * np.log(1 - mu)
 
 #JointSNVMix    
-def log_binomial_likelihood_multi(k, n, mu):
+def log_binomial_likelihood_joint(k, n, mu):
     d = len(mu.shape)
     column_shape = [k.size]
     column_shape.extend([1 for i in range(0, d)])
@@ -220,13 +220,13 @@ def get_mu_E(mu_N, mu_G, c_N, c_H, phi):
     
     return ((1 - phi)*c_N*mu_N + phi*c_H*mu_G)/((1 - phi)*c_N + phi*c_H)
     
-def get_mu_E_multi(mu_N, mu_G, c_N, c_H, phi):
-    axis_1_shape = (mu_G.size, 1, 1)
-    axis_2_shape = (1, phi.size, 1)
-    axis_3_shape = (1, 1, c_H.size)
-    mu_G = mu_G.reshape(axis_1_shape)
-    phi = phi.reshape(axis_2_shape)
-    c_H = c_H.reshape(axis_3_shape)
+def get_mu_E_joint(mu_N, mu_G, c_N, c_H, phi):
+    axis_1_shape = (phi.size, 1, 1)
+    axis_2_shape = (1, c_H.size, 1)
+    axis_3_shape = (1, 1, mu_G.size)
+    phi = phi.reshape(axis_1_shape)
+    c_H = c_H.reshape(axis_2_shape)
+    mu_G = mu_G.reshape(axis_3_shape)
     
     return ((1 - phi)*c_N*mu_N + phi*c_H*mu_G)/((1 - phi)*c_N + phi*c_H)
     

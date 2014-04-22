@@ -119,7 +119,7 @@ class JointModelLikelihood(ModelLikelihood):
     def __init__(self, priors, data, config_parameters):
         ModelLikelihood.__init__(self, priors, data, config_parameters)
         
-    def ll_by_seg(self, model_parameters, j):
+    def complete_ll_by_seg(self, model_parameters, j):
         H = self.config_parameters.allele_config_num
         K = self.config_parameters.subclone_num
         
@@ -130,7 +130,7 @@ class JointModelLikelihood(ModelLikelihood):
         
         return ll
         
-    def _ll_CNA_by_seg(self, model_parameters, j):
+    def _complete_ll_CNA_by_seg(self, model_parameters, j):
         H = self.config_parameters.allele_config_num
         K = self.config_parameters.subclone_num
         
@@ -150,10 +150,11 @@ class JointModelLikelihood(ModelLikelihood):
         
         return ll_CNA_j
         
-    def _ll_LOH_by_seg(self, model_parameters, j):
+    def _complete_ll_LOH_by_seg(self, model_parameters, j):
         H = self.config_parameters.allele_config_num
         K = self.config_parameters.subclone_num
-        Q_GH = np.array(self.config_parameters.Q_GH)
+        G = self.config_parameters.genotype_num
+        Q_GH = np.array(self.config_parameters.Q_GH).reshape(1, 1, H, G)
         
         phi = np.array(model_parameters.parameters['phi'])
         
@@ -161,12 +162,15 @@ class JointModelLikelihood(ModelLikelihood):
         c_H = np.array(self.config_parameters.allele_config_CN)
         mu_N = constants.MU_N
         mu_G = np.array(self.config_parameters.MU_G)
-        mu_E = get_mu_E_multi(mu_N, mu_G, c_N, c_H, phi)
+        mu_E = get_mu_E_joint(mu_N, mu_G, c_N, c_H, phi)
         a_T_j = self.data.segments[j].paired_counts[:, 2]
         b_T_j = self.data.segments[j].paired_counts[:, 3]
         d_T_j = a_T_j + b_T_j
         
-        #ll = np.log(Q_GH[:, h]) + log_binomial_likelihood_multi(b_T_j, d_T_j, mu_E)
+        ll = np.log(Q_GH) + log_binomial_likelihood_joint(b_T_j, d_T_j, mu_E)
+        ll_LOH_j = np.logaddexp.reduce(ll, axis=3).sum(axis=0)
+        
+        return ll_LOH_j
         
         
         
