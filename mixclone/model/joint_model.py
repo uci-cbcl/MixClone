@@ -70,17 +70,17 @@ class JointModelTrainer(ModelTrainer):
         pi = self.model_parameters.parameters['pi']
         
         for j in range(0, J):
-            complete_ll_j = self.model_likelihood.complete_ll_by_seg(self.model_parameters, j)
-            complete_ll_j = np.log(rho[j].reshape((1, H))) + np.log(pi.reshape((K, 1))) + complete_ll_j
+            ll_j = self.model_likelihood.ll_by_seg(self.model_parameters, j)
+            ll_j = np.log(rho[j].reshape((1, H))) + np.log(pi.reshape((K, 1))) + ll_j
             
             for h in range(0, H):
                 h_T = self.config_parameters.allele_config[h]
             
                 if self.data.segments[j].LOH_status == 'FALSE' and check_balance_allele_type(h_T) == False:
-                    complete_ll_j[:, h] = np.log(1.0/constants.INF)
+                    ll_j[:, h] = np.log(1.0/constants.INF)
             
-            psi_j_temp = np.logaddexp.reduce(complete_ll_j, axis=0)
-            kappa_j_temp = np.logaddexp.reduce(complete_ll_j, axis=1)
+            psi_j_temp = np.logaddexp.reduce(ll_j, axis=0)
+            kappa_j_temp = np.logaddexp.reduce(ll_j, axis=1)
             psi_j = log_space_normalise_rows_annealing(phi_j_temp.reshape((1, H)), eta)
             kappa_j = log_space_normalise_rows_annealing(kappa_j_temp.reshape((1, K)), eta)
             
@@ -187,18 +187,18 @@ class JointModelLikelihood(ModelLikelihood):
     def __init__(self, priors, data, config_parameters):
         ModelLikelihood.__init__(self, priors, data, config_parameters)
         
-    def complete_ll_by_seg(self, model_parameters, j):
+    def ll_by_seg(self, model_parameters, j):
         H = self.config_parameters.allele_config_num
         K = self.config_parameters.subclone_num
         
         ll = np.zeros((K, H))
         
-        ll += self._complete_ll_CNA_by_seg(model_parameters, j)
-        ll += self._complete_ll_LOH_by_seg(model_parameters, j)
+        ll += self._ll_CNA_by_seg(model_parameters, j)
+        ll += self._ll_LOH_by_seg(model_parameters, j)
         
         return ll
         
-    def _complete_ll_CNA_by_seg(self, model_parameters, j):
+    def _ll_CNA_by_seg(self, model_parameters, j):
         H = self.config_parameters.allele_config_num
         K = self.config_parameters.subclone_num
         
@@ -218,7 +218,7 @@ class JointModelLikelihood(ModelLikelihood):
         
         return ll_CNA_j
         
-    def _complete_ll_LOH_by_seg(self, model_parameters, j):
+    def _ll_LOH_by_seg(self, model_parameters, j):
         H = self.config_parameters.allele_config_num
         K = self.config_parameters.subclone_num
         G = self.config_parameters.genotype_num
