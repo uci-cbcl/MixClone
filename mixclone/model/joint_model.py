@@ -58,6 +58,62 @@ class JointModelTrainer(ModelTrainer):
     def train(self):
         
         return None
+    
+    
+    def _E_step(self):
+        J = self.data.seg_num
+        H = self.config_parameters.allele_config_num
+        K = self.config_parameters.subclone_num
+        eta = constants.ETA
+        
+        rho = self.model_parameters.parameters['rho']
+        pi = self.model_parameters.parameters['pi']
+        
+        for j in range(0, J):
+            complete_ll_j = self.model_likelihood.complete_ll_by_seg(self.model_parameters, j)
+            complete_ll_j = np.log(rho[j].reshape((1, H))) + np.log(pi.reshape((K, 1))) + complete_ll_j
+            
+            for h in range(0, H):
+                h_T = self.config_parameters.allele_config[h]
+            
+                if self.data.segments[j].LOH_status == 'FALSE' and check_balance_allele_type(h_T) == False:
+                    complete_ll_j[:, h] = np.log(1.0/constants.INF)
+            
+            psi_j_temp = np.logaddexp.reduce(complete_ll_j, axis=0)
+            kappa_j_temp = np.logaddexp.reduce(complete_ll_j, axis=1)
+            psi_j = log_space_normalise_rows_annealing(phi_j_temp.reshape((1, H)), eta)
+            kappa_j = log_space_normalise_rows_annealing(kappa_j_temp.reshape((1, K)), eta)
+            
+            self.latent_variables.sufficient_statistics['psi'][j] = psi_j
+            self.latent_variables.sufficient_statistics['kappa'][j] = kappa_j
+    #TODO        
+    def _M_step(self):
+        
+        return None
+    
+    def _update_rho(self):
+        x = constants.UPDATE_WEIGHTS['x']
+        y = constants.UPDATE_WEIGHTS['y']
+        
+        psi = np.array(self.latent_variables.sufficient_statistics['psi'])
+        omega = np.array(self.priors['omega'])
+        
+        rho_data = psi
+        rho_prior = omega/omega.sum()
+        
+        #rho = x*rho_data + y*rho_priors
+        rho = rho_data
+        
+        self.model_parameters.parameters['rho'] =  rho
+    
+    def _update_pi(self):
+        J = self.data.seg_num
+        
+        kappa = np.array(self.latent_variables.sufficient_statistics['kappa'])
+        
+        pi = kappa.sum(axis=0)/J
+        
+        self.model_parameters.parameters['pi'] = pi
 
 
 class JointConfigParameters(ConfigParameters):
@@ -89,6 +145,18 @@ class JointModelParameters(ModelParameters):
         parameters['rho'] = np.ones((J, H))*1.0/H
         parameters['pi'] = np.ones(K)*1.0/K
         parameters['phi'] = np.random.random(K)
+
+        self.parameters = parameters
+        
+    def reinit_parameters(self, phi):
+        J = self.data.seg_num
+        H = self.config_parameters.allele_config_num
+        K = self.config_parameters.subclone_num
+        
+        parameters = {}
+        parameters['rho'] = np.ones((J, H))*1.0/H
+        parameters['pi'] = np.ones(K)*1.0/K
+        parameters['phi'] = phi
 
         self.parameters = parameters
 
@@ -125,8 +193,8 @@ class JointModelLikelihood(ModelLikelihood):
         
         ll = np.zeros((K, H))
         
-        ll += self._ll_CNA_by_seg(model_parameters, j)
-        ll += self._ll_LOH_by_seg(model_parameters, j)
+        ll += self._complete_ll_CNA_by_seg(model_parameters, j)
+        ll += self._complete_ll_LOH_by_seg(model_parameters, j)
         
         return ll
         
