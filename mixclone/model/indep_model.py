@@ -77,7 +77,7 @@ class IndepModelTrainer(ModelTrainer):
             h_T = self.config_parameters.allele_config[h]
             
             if self.data.segments[j].LOH_status == 'FALSE' and check_balance_allele_type(h_T) == False:
-                ll_lst.append(-1*constants.INF)
+                ll_lst.append(-1.0*constants.INF)
                 phi_lst.append(-1)
                 continue
             

@@ -16,7 +16,7 @@ import numpy as np
 BAF_N_MIN = 0.4
 BAF_N_MAX = 0.6
 BAF_BINS = np.array(range(0, 100 + 1))/100.0
-LOH_FRAC_MAX = 0.25
+LOH_FRAC_MAX = 0.11
 SITES_NUM_MIN = 20
 PHI_INIT = [0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
 PHI_RANGE = [i/100.0 for i in range(2, 99)]
