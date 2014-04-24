@@ -71,7 +71,7 @@ class JointModelTrainer(ModelTrainer):
         phi = self.model_parameters.parameters['phi']
         
         for j in range(0, J):
-            ll_j = self.model_likelihood.ll_by_seg(phi, j)
+            ll_j = self.model_likelihood.ll_by_seg(self.model_parameters, j)
             ll_j = np.log(rho[j].reshape((1, H))) + np.log(pi.reshape((K, 1))) + ll_j
             
             for h in range(0, H):
@@ -85,8 +85,8 @@ class JointModelTrainer(ModelTrainer):
             psi_j = log_space_normalise_rows_annealing(psi_j_temp.reshape((1, H)), eta)
             kappa_j = log_space_normalise_rows_annealing(kappa_j_temp.reshape((1, K)), eta)
             
-            self.latent_variables.sufficient_statistics['psi'][j] = psi_j
-            self.latent_variables.sufficient_statistics['kappa'][j] = kappa_j
+            self.latent_variables.sufficient_statistics['psi'][j] = psi_j + constants.EPS
+            self.latent_variables.sufficient_statistics['kappa'][j] = kappa_j + constants.EPS
     #TODO        
     def _M_step(self):
         
@@ -127,11 +127,39 @@ class JointModelTrainer(ModelTrainer):
         self.model_parameters.parameters['pi'] = pi
         
     def _update_phi(self):
-        J = self.data.seg_num
         K = self.config_parameters.subclone_num
         
+        for k in range(0, K):
+            self.model_parameters.parameters['phi'][k] = self._bisec_search_ll(k)
+
+    def _bisec_search_ll(self, k):
+        phi_start = 0.01
+        phi_end = 0.99
+        phi_stop = 1e-4
+        phi_change = 1
         
+        while phi_change > phi_stop:
+            phi_left = phi_start + (phi_end - phi_start)*1/3
+            phi_right = phi_start + (phi_end - phi_start)*2/3
+            
+            self.model_parameters.parameters['phi'][k] = phi_left
+            ll_left = self.model_likelihood.complete_ll_by_subclone(self.model_parameters, self.latent_variables, k)
+            self.model_parameters.parameters['phi'][k] = phi_right
+            ll_right = self.model_likelihood.complete_ll_by_subclone(self.model_parameters, self.latent_variables, k)
+            
+            print 'left\t' + str(phi_left) + '\t' + str(ll_left)
+            print 'right\t' + str(phi_right) + '\t' + str(ll_right)
+            
+            if ll_left >= ll_right:
+                phi_change = phi_end - phi_right
+                phi_end = phi_right
+            else:
+                phi_change = phi_left - phi_start
+                phi_start = phi_left
+                            
+        phi_optimum = (phi_start + phi_end)/2
         
+        return phi_optimum
 
 
 class JointConfigParameters(ConfigParameters):
@@ -205,18 +233,93 @@ class JointModelLikelihood(ModelLikelihood):
     def __init__(self, priors, data, config_parameters):
         ModelLikelihood.__init__(self, priors, data, config_parameters)
         
-    def ll_by_seg(self, phi, j):
+    def ll_by_seg(self, model_parameters, j):
         H = self.config_parameters.allele_config_num
         K = self.config_parameters.subclone_num
         
         ll = np.zeros((K, H))
         
-        ll += self._ll_CNA_by_seg(phi, j)
-        ll += self._ll_LOH_by_seg(phi, j)
+        ll += self._ll_CNA_by_seg(model_parameters, j)
+        ll += self._ll_LOH_by_seg(model_parameters, j)
 
         return ll
         
-    def _ll_CNA_by_seg(self, phi, j):
+    def _ll_CNA_by_seg(self, model_parameters, j):
+        H = self.config_parameters.allele_config_num
+        K = self.config_parameters.subclone_num
+        
+        phi = np.array(model_parameters.parameters['phi'])
+        
+        c_N = constants.COPY_NUMBER_NORMAL
+        c_S = constants.COPY_NUMBER_BASELINE
+        c_H = np.array(self.config_parameters.allele_config_CN)
+        D_N_j = self.data.segments[j].normal_reads_num
+        D_T_j = self.data.segments[j].tumor_reads_num
+        Lambda_S = self.data.Lambda_S
+        
+        c_E_j = get_c_E(c_N, c_H, phi)
+        lambda_E_j = D_N_j*c_E_j*Lambda_S/c_S
+        
+        ll_CNA_j = log_poisson_likelihood(D_T_j, lambda_E_j)
+        
+        return ll_CNA_j
+        
+    def _ll_LOH_by_seg(self, model_parameters, j):
+        H = self.config_parameters.allele_config_num
+        K = self.config_parameters.subclone_num
+        G = self.config_parameters.genotype_num
+        Q_HG = np.array(self.config_parameters.Q_HG).reshape(1, 1, H, G)
+        
+        phi = np.array(model_parameters.parameters['phi'])
+        
+        c_N = constants.COPY_NUMBER_NORMAL
+        c_H = np.array(self.config_parameters.allele_config_CN)
+        mu_N = constants.MU_N
+        mu_G = np.array(self.config_parameters.MU_G)
+        mu_E = get_mu_E_joint(mu_N, mu_G, c_N, c_H, phi)
+        a_T_j = self.data.segments[j].paired_counts[:, 2]
+        b_T_j = self.data.segments[j].paired_counts[:, 3]
+        d_T_j = a_T_j + b_T_j
+        
+        ll = np.log(Q_HG) + log_binomial_likelihood_joint(b_T_j, d_T_j, mu_E)
+        ll_LOH_j = np.logaddexp.reduce(ll, axis=3).sum(axis=0)
+        
+        return ll_LOH_j
+        
+    def complete_ll_by_subclone(self, model_parameters, latent_variables, k):
+        J = self.data.seg_num
+        H = self.config_parameters.allele_config_num
+
+        rho = np.array(model_parameters.parameters['rho'])
+        pi = np.array(model_parameters.parameters['pi'])
+        phi = np.array(model_parameters.parameters['phi'])
+        psi = np.array(latent_variables.sufficient_statistics['psi'])
+        kappa = np.array(latent_variables.sufficient_statistics['kappa'])
+        
+        ll = 0
+        
+        for j in range(0, J):
+            ll_j = self.complete_ll_by_subclone_seg(model_parameters, k, j)
+            ll_j = np.log(rho[j].reshape((1, H))) + np.log(pi[k]) + ll_j
+            ll_j = kappa[j, k]*psi[j].reshape((1, H))*ll_j
+            
+            ll += ll_j.sum()
+            
+        return ll
+            
+    def complete_ll_by_subclone_seg(self, model_parameters, k, j):
+        H = self.config_parameters.allele_config_num
+        
+        phi = np.array(model_parameters.parameters['phi'])
+        
+        ll = np.zeros((1, H))
+        
+        ll += self._ll_CNA_by_subclone_seg(phi[k], j)
+        ll += self._ll_LOH_by_subclone_seg(phi[k], j)
+        
+        return ll
+        
+    def _ll_CNA_by_subclone_seg(self, phi, j):
         H = self.config_parameters.allele_config_num
         K = self.config_parameters.subclone_num
         
@@ -234,7 +337,7 @@ class JointModelLikelihood(ModelLikelihood):
         
         return ll_CNA_j
         
-    def _ll_LOH_by_seg(self, phi, j):
+    def _ll_LOH_by_subclone_seg(self, phi, j):
         H = self.config_parameters.allele_config_num
         K = self.config_parameters.subclone_num
         G = self.config_parameters.genotype_num
@@ -253,19 +356,7 @@ class JointModelLikelihood(ModelLikelihood):
         ll_LOH_j = np.logaddexp.reduce(ll, axis=3).sum(axis=0)
         
         return ll_LOH_j
-        
-    #def complete_ll_by_subclone(self, psi, kappa, rho, pi, phi, k):
-    #    J = self.data.seg_num
-    #    
-    #    
-    #def complete_ll_by_subclone_seg(self, rho, pi, phi, k, j):
-    #    H = self.config_parameters.allele_config_num
-    #    
-    #    ll = np.zeros((1, H))
-    #    
-    #    ll += self._ll_CNA_by_seg(phi[k], j)
-    #    ll += self._ll_LOH_by_seg(phi[k], j)
-    #    
-    #    return ll
-        
+
+
+
 
