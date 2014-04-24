@@ -87,10 +87,13 @@ class JointModelTrainer(ModelTrainer):
             
             self.latent_variables.sufficient_statistics['psi'][j] = psi_j + constants.EPS
             self.latent_variables.sufficient_statistics['kappa'][j] = kappa_j + constants.EPS
-    #TODO        
+
     def _M_step(self):
+        self._update_rho()
         
-        return None
+        self._update_pi()
+        
+        self._update_phi()
     
     def _update_rho(self):
         #x = constants.UPDATE_WEIGHTS['x']
@@ -135,7 +138,7 @@ class JointModelTrainer(ModelTrainer):
     def _bisec_search_ll(self, k):
         phi_start = 0.01
         phi_end = 0.99
-        phi_stop = 1e-4
+        phi_stop = 1e-5
         phi_change = 1
         
         while phi_change > phi_stop:
@@ -147,8 +150,8 @@ class JointModelTrainer(ModelTrainer):
             self.model_parameters.parameters['phi'][k] = phi_right
             ll_right = self.model_likelihood.complete_ll_by_subclone(self.model_parameters, self.latent_variables, k)
             
-            print 'left\t' + str(phi_left) + '\t' + str(ll_left)
-            print 'right\t' + str(phi_right) + '\t' + str(ll_right)
+            #print 'left\t' + str(phi_left) + '\t' + str(ll_left)
+            #print 'right\t' + str(phi_right) + '\t' + str(ll_right)
             
             if ll_left >= ll_right:
                 phi_change = phi_end - phi_right
@@ -315,7 +318,7 @@ class JointModelLikelihood(ModelLikelihood):
         ll = np.zeros((1, H))
         
         ll += self._ll_CNA_by_subclone_seg(phi[k], j)
-        ll += self._ll_LOH_by_subclone_seg(phi[k], j)
+        #ll += self._ll_LOH_by_subclone_seg(phi[k], j)
         
         return ll
         
