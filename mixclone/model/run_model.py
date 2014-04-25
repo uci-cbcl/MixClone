@@ -49,7 +49,8 @@ def run_model(args):
     
     print "*" * 100
     print "* Finish."
-    print "* Run time: {0:.2f} seconds".format(time_end - time_start)
+    print "* Run time : {0:.2f} seconds".format(time_end - time_start)
+    print "* Optimum Log-likelihood : ", joint_model.ll
     print "*" * 100
     sys.stdout.flush()
     
