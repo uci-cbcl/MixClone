@@ -53,8 +53,6 @@ class JointModelTrainer(ModelTrainer):
         self.latent_variables = JointLatentVariables(self.data, self.config_parameters)
         
         self.model_likelihood = JointModelLikelihood(self.priors, self.data, self.config_parameters)
-        
-        self.ll = 0
  
     def train(self):
         ll_lst = []
@@ -319,7 +317,6 @@ class JointModelParameters(ModelParameters):
         self.parameters['pi'] = np.array(model_parameters.parameters['pi'])
         self.parameters['phi'] = np.array(model_parameters.parameters['phi'])
         
-
 
 class JointLatentVariables(LatentVariables):
     def __init__(self, data, config_parameters):

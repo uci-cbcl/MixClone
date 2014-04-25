@@ -57,16 +57,20 @@ class IndepModelTrainer(ModelTrainer):
     def train(self):
         seg_num = self.data.seg_num
         
+        ll = 0
+        
         for j in range(0, seg_num):
             if self.data.segments[j].LOH_status == 'NONE':
                 continue
             
-            h_j, c_H_j, phi_j = self.train_by_seg(j)
+            h_j, phi_j, ll_j = self.train_by_seg(j)
             
-            self.data.segments[j].allele_type = h_j
-            self.data.segments[j].copy_number = c_H_j
-            if h_j != constants.ALLELE_TYPE_BASELINE:
-                self.data.segments[j].subclone_prev = phi_j
+            self.latent_variables.latent_variables['H'][j] = h_j
+            if self.config_parameters.allele_config[h_j] != constants.ALLELE_TYPE_BASELINE:
+                self.model_parameters.parameters['phi'][j] = phi_j
+                ll += ll_j
+                
+        self.ll = ll
             
     def train_by_seg(self, j):
         H = self.config_parameters.allele_config_num
@@ -89,15 +93,13 @@ class IndepModelTrainer(ModelTrainer):
             c_H_ = self.config_parameters.allele_config_CN[h]
             
             self._print_running_info(j, h_, c_H_, phi, ll)
-            
+        
         ll_lst = np.array(ll_lst)
-        idx_optimum = ll_lst.argmax()
+        h_optimum = ll_lst.argmax()
+        phi_optimum = phi_lst[h_optimum]
+        ll_optimum = ll_lst[h_optimum]
         
-        h_optimum = self.config_parameters.allele_config[idx_optimum]
-        c_H_optimum = self.config_parameters.allele_config_CN[idx_optimum]
-        phi_optimum = phi_lst[idx_optimum]
-        
-        return (h_optimum, c_H_optimum, phi_optimum)
+        return (h_optimum, phi_optimum, ll_optimum)
         
     def bisec_search_ll(self, j, h):
         phi_start = 0.01
@@ -123,6 +125,22 @@ class IndepModelTrainer(ModelTrainer):
         ll_optimum = self.model_likelihood.ll_by_seg(h, phi_optimum, j)
         
         return (ll_optimum, phi_optimum)
+
+    def predict(self):
+        seg_num = self.data.seg_num
+        
+        for j in range(0, seg_num):
+            if self.data.segments[j].LOH_status == 'NONE':
+                continue
+            
+            h_j = self.latent_variables.latent_variables['H'][j]
+            c_H_j = self.config_parameters.allele_config_CN[h_j]
+            phi_j = self.model_parameters.parameters['phi'][j]
+            
+            self.data.segments[j].allele_type = self.config_parameters.allele_config[h_j]
+            self.data.segments[j].copy_number = c_H_j
+            if self.config_parameters.allele_config[h_j] != constants.ALLELE_TYPE_BASELINE:
+                self.data.segments[j].subclone_prev = phi_j
 
     def _print_running_info(self, j, h_j, c_H_j, phi_j, ll_j):
         print "#" * 100

@@ -60,8 +60,10 @@ class ProbabilisticModel(object):
                                            self.subclone_num, max_iters, stop_value)
         
         trainer.train()
+        trainer.predict()
         
         self.data = trainer.data
+        self.ll = trainer.ll
         
     def write_results(self, filename_base):
         results_file_name = filename_base + '.MixClone.results.pkl'
@@ -90,6 +92,8 @@ class ModelTrainer(object):
         self.stop_value = stop_value
         
         self.iters = 0
+        
+        self.ll = 0
             
         self._init_components()
         
