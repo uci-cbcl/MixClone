@@ -53,13 +53,118 @@ class JointModelTrainer(ModelTrainer):
         self.latent_variables = JointLatentVariables(self.data, self.config_parameters)
         
         self.model_likelihood = JointModelLikelihood(self.priors, self.data, self.config_parameters)
-    
-    #TODO    
-    def train(self):
         
-        return None
+        self.ll = 0
+ 
+    def train(self):
+        ll_lst = []
+        model_parameters_lst = []
+        
+        phi_init_lst = get_phi_init(self.subclone_num)
+        
+        for phi_init in phi_init_lst:
+            phi_init = np.array(phi_init)
+            
+            ll, model_parameters = self.train_reinit(phi_init)
+            
+            ll_lst.append(ll)
+            model_parameters_lst.append(model_parameters)
+        
+        ll_lst = np.array(ll_lst)
+        idx_optimum = ll_lst.argmax()
+        
+        ll_optimum = ll_lst[idx_optimum]
+        model_parameters_optimum = model_parameters_lst[idx_optimum]
+        
+        self.model_parameters.copy_parameters(model_parameters_optimum)
+        self.ll = ll_optimum
+       
+    def train_reinit(self, phi_init):
+        converged = False
+        
+        self.model_parameters.reinit_parameters(phi_init)
+        ll_old = self.likelihood()
+        iters = 0
+        
+        while converged == False:
+            self._E_step()
+            self._M_step()
+
+            parameters = self.model_parameters.parameters
+            ll_new = self.likelihood()
+            
+            if iters > 0:
+                ll_change = (ll_new - ll_old) / np.abs(ll_old)
+            else:
+                ll_change = float('inf')
+            
+            self._print_running_info(ll_new, ll_old, ll_change, phi_init, iters)
+            
+            ll_old = ll_new
+            
+            if np.abs(ll_change) < self.stop_value:
+                print "Stop value of EM iterations exceeded. Exiting training..."
+                sys.stdout.flush()
+                converged = True
+                            
+            if iters >= self.max_iters:
+                print "Maximum numbers of EM iterations exceeded. Exiting training..."
+                sys.stdout.flush()
+                converged = True
+            
+            iters += 1
+        
+        model_parameters = JointModelParameters(self.priors, self.data, self.config_parameters)
+        model_parameters.copy_parameters(self.model_parameters)
+            
+        return (ll_new, model_parameters)
     
+    def _print_running_info(self, ll_new, ll_old, ll_change, phi_init, iters):
+        phi_init_str = map("{0:.3f}".format, phi_init.tolist())
+        phi_str = map("{0:.3f}".format, self.model_parameters.parameters['phi'].tolist())
+        
+        print "#" * 100
+        print "# Running Info."
+        print "#" * 100
+        print "Model : joint"
+        print "Maximum copy number : ", self.config_parameters.max_copynumber
+        print "Subclone number : ", self.config_parameters.subclone_num
+        print "Number of iterations : ", iters
+        print "New log-likelihood : ", ll_new
+        print "Old log-likelihood : ", ll_old 
+        print "Log-likelihood change : ", ll_change
+        print "Initial subclone prevalence :  ", '\t'.join(phi_init_str)
+        print "Estimated subclone prevalence :", '\t'.join(phi_str)
+        sys.stdout.flush()
     
+    def likelihood(self):
+        J = self.data.seg_num
+        H = self.config_parameters.allele_config_num
+        K = self.config_parameters.subclone_num
+        
+        rho = self.model_parameters.parameters['rho']
+        pi = self.model_parameters.parameters['pi']
+        phi = self.model_parameters.parameters['phi']
+        
+        ll = 0
+        
+        for j in range(0, J):
+            ll_j = self.model_likelihood.ll_by_seg(self.model_parameters, j)
+            ll_j = np.log(rho[j].reshape((1, H))) + np.log(pi.reshape((K, 1))) + ll_j
+            
+            for h in range(0, H):
+                h_T = self.config_parameters.allele_config[h]
+            
+                if self.data.segments[j].LOH_status == 'FALSE' and check_balance_allele_type(h_T) == False:
+                    ll_j[:, h] = -1.0*constants.INF
+            
+            ll_j = np.logaddexp.reduce(ll_j, axis=1)
+            ll_j = np.logaddexp.reduce(ll_j, axis=0)
+            
+            ll += ll_j
+        
+        return ll
+
     def _E_step(self):
         J = self.data.seg_num
         H = self.config_parameters.allele_config_num
@@ -138,7 +243,7 @@ class JointModelTrainer(ModelTrainer):
     def _bisec_search_ll(self, k):
         phi_start = 0.01
         phi_end = 0.99
-        phi_stop = 1e-5
+        phi_stop = 1e-4
         phi_change = 1
         
         while phi_change > phi_stop:
@@ -205,9 +310,15 @@ class JointModelParameters(ModelParameters):
         parameters = {}
         parameters['rho'] = np.ones((J, H))*1.0/H
         parameters['pi'] = np.ones(K)*1.0/K
-        parameters['phi'] = phi
+        parameters['phi'] = np.array(phi)
 
         self.parameters = parameters
+        
+    def copy_parameters(self, model_parameters):
+        self.parameters['rho'] = np.array(model_parameters.parameters['rho'])
+        self.parameters['pi'] = np.array(model_parameters.parameters['pi'])
+        self.parameters['phi'] = np.array(model_parameters.parameters['phi'])
+        
 
 
 class JointLatentVariables(LatentVariables):

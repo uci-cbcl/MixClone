@@ -22,6 +22,7 @@ Modified on 2014-04-15
 
 @author: Yi Li
 '''
+import itertools
 import numpy as np
 from scipy.special import gammaln
 
@@ -235,6 +236,24 @@ def rand_probs(N):
     probs = rand_int*1.0/rand_int.sum()
     
     return probs
+    
+def get_phi_init(subclone_num):
+    phi_range_dict = {}
+    phi_range_dict[1] = [[0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]]
+    phi_range_dict[2] = [[0.2, 0.3, 0.4, 0.5], [0.6, 0.7, 0.8, 0.9]]
+    phi_range_dict[3] = [[0.2, 0.3, 0.4], [0.5, 0.6, 0.7], [0.8, 0.9]]
+    phi_range_dict[4] = [[0.2, 0.3], [0.4, 0.5], [0.6, 0.7], [0.8, 0.9]]
+    phi_range_dict[5] = [[0.2, 0.3], [0.4, 0.5], [0.6, 0.7], [0.8], [0.9]]
+    
+    phi_init = {}
+    phi_init[1] = list(itertools.product(*phi_range_dict[1]))
+    phi_init[2] = list(itertools.product(*phi_range_dict[2]))
+    phi_init[3] = list(itertools.product(*phi_range_dict[3]))
+    phi_init[4] = list(itertools.product(*phi_range_dict[4]))
+    phi_init[5] = list(itertools.product(*phi_range_dict[5]))
+    
+    return phi_init[subclone_num]
+
     
     
 
