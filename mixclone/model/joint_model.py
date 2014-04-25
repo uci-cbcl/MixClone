@@ -57,24 +57,28 @@ class JointModelTrainer(ModelTrainer):
     def train(self):
         ll_lst = []
         model_parameters_lst = []
+        latent_variables_lst = []
         
         phi_init_lst = get_phi_init(self.subclone_num)
         
         for phi_init in phi_init_lst:
             phi_init = np.array(phi_init)
             
-            ll, model_parameters = self.train_reinit(phi_init)
+            ll, model_parameters, latent_variables = self.train_reinit(phi_init)
             
             ll_lst.append(ll)
             model_parameters_lst.append(model_parameters)
+            latent_variables_lst.append(latent_variables)
         
         ll_lst = np.array(ll_lst)
         idx_optimum = ll_lst.argmax()
         
         ll_optimum = ll_lst[idx_optimum]
         model_parameters_optimum = model_parameters_lst[idx_optimum]
+        latent_variables_optimum = latent_variables_lst[idx_optimum]
         
         self.model_parameters.copy_parameters(model_parameters_optimum)
+        self.latent_variables.copy_latent_variables(latent_variables_optimum)
         self.ll = ll_optimum
        
     def train_reinit(self, phi_init):
@@ -114,9 +118,26 @@ class JointModelTrainer(ModelTrainer):
         
         model_parameters = JointModelParameters(self.priors, self.data, self.config_parameters)
         model_parameters.copy_parameters(self.model_parameters)
+        latent_variables = JointLatentVariables(self.data, self.config_parameters)
+        latent_variables.copy_latent_variables(self.latent_variables)
             
-        return (ll_new, model_parameters)
+        return (ll_new, model_parameters, latent_variables)
     
+    def predict(self):
+        J = self.data.seg_num
+        
+        for j in range(0, J):
+            h_idx = self.latent_variables.sufficient_statistics['psi'][j].argmax()
+            phi_idx = self.latent_variables.sufficient_statistics['kappa'][j].argmax()
+            h_j = self.config_parameters.allele_config[h_idx]
+            c_H_j = self.config_parameters.allele_config_CN[h_idx]
+            phi_j = self.model_parameters.parameters['phi'][phi_idx]
+            
+            self.data.segments[j].allele_type = h_j
+            self.data.segments[j].copy_number = c_H_j
+            if h_j != constants.ALLELE_TYPE_BASELINE:
+                self.data.segments[j].subclone_prev = phi_j
+        
     def _print_running_info(self, ll_new, ll_old, ll_change, phi_init, iters):
         phi_init_str = map("{0:.3f}".format, phi_init.tolist())
         phi_str = map("{0:.3f}".format, self.model_parameters.parameters['phi'].tolist())
@@ -338,6 +359,10 @@ class JointLatentVariables(LatentVariables):
             sufficient_statistics['kappa'][j] = rand_probs(K)
     
         self.sufficient_statistics = sufficient_statistics
+        
+    def copy_latent_variables(self, latent_variables):
+        self.sufficient_statistics['psi'] = np.array(latent_variables.sufficient_statistics['psi'])
+        self.sufficient_statistics['kappa'] = np.array(latent_variables.sufficient_statistics['kappa'])
 
 
 class JointModelLikelihood(ModelLikelihood):
