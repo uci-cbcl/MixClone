@@ -24,22 +24,22 @@ from mixclone import constants
 from mixclone.preprocess.data import Data
 
 def run_postprocess(args):
-    if args.Data == True:
-        file_name = args.filename_base + '.MixClone.data.pkl'
+    if args.input == True:
+        file_name = args.output_filename_base + '.MixClone.input.pkl'
     else:
-        file_name = args.filename_base + '.MixClone.results.pkl'
+        file_name = args.output_filename_base + '.MixClone.output.pkl'
     
     infile = open(file_name, 'rb')
     data = pkl.load(infile)
     infile.close()
     
-    extract_paired_counts(data, args.filename_base)
+    extract_paired_counts(data, args.output_filename_base)
     
-    extract_segments(data, args.filename_base)
+    extract_segments(data, args.output_filename_base)
     
         
-def extract_paired_counts(data, filename_base):
-    counts_file_name = filename_base + '.MixClone.counts'
+def extract_paired_counts(data, output_filename_base):
+    counts_file_name = output_filename_base + '.MixClone.counts'
     outfile = open(counts_file_name, 'w')
     segments = data.segments
     
@@ -54,8 +54,8 @@ def extract_paired_counts(data, filename_base):
     outfile.close()
     
     
-def extract_segments(data, filename_base):
-    segments_file_name = filename_base + '.MixClone.segments'
+def extract_segments(data, output_filename_base):
+    segments_file_name = output_filename_base + '.MixClone.segments'
     outfile = open(segments_file_name, 'w')
     segments = data.segments
     

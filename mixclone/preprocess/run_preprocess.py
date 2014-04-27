@@ -31,7 +31,7 @@ def run_preprocess(args):
                                    args.normal_bam,
                                    args.tumor_bam,
                                    args.reference_genome,
-                                   args.filename_base,
+                                   args.input_filename_base,
                                    args.segments_bed,
                                    min_depth=args.min_depth,
                                    min_bqual=args.min_base_qual,
@@ -48,12 +48,12 @@ def run_preprocess(args):
 
 class BamToDataConverter:
     def __init__(self, normal_bam_filename, tumor_bam_filename,
-                 reference_genome_filename, filename_base, segments_bed,
+                 reference_genome_filename, input_filename_base, segments_bed,
                  min_depth=20, min_bqual=10, min_mqual=10, process_num=1):
         self.normal_bam_filename = normal_bam_filename
         self.tumor_bam_filename = tumor_bam_filename
         self.reference_genome_filename = reference_genome_filename
-        self.filename_base = filename_base
+        self.input_filename_base = input_filename_base
         self.segments_bed = segments_bed
         
         self.min_depth = min_depth
@@ -70,7 +70,7 @@ class BamToDataConverter:
         
         self._get_LOH_frac()
         
-        data_file_name = self.filename_base + '.MixClone.data.pkl'
+        data_file_name = self.input_filename_base + '.MixClone.input.pkl'
         outfile = open(data_file_name, 'wb')
         pkl.dump(self.data, outfile, protocol=2)
         

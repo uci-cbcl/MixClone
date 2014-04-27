@@ -45,8 +45,8 @@ class ProbabilisticModel(object):
     def read_priors(self, priors_filename):
         raise NotImplemented
     
-    def read_data(self, filename_base):
-        data_file_name = filename_base + '.MixClone.data.pkl'
+    def read_data(self, input_filename_base):
+        data_file_name = input_filename_base + '.MixClone.input.pkl'
         infile = open(data_file_name, 'rb')
         self.data = pkl.load(infile)
         
@@ -65,8 +65,8 @@ class ProbabilisticModel(object):
         self.data = trainer.data
         self.ll = trainer.ll
         
-    def write_results(self, filename_base):
-        results_file_name = filename_base + '.MixClone.results.pkl'
+    def write_results(self, output_filename_base):
+        results_file_name = output_filename_base + '.MixClone.output.pkl'
         outfile = open(results_file_name, 'wb')
         pkl.dump(self.data, outfile, protocol=2)
         

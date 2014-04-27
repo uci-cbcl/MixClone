@@ -41,8 +41,8 @@ parser_preprocess.add_argument('normal_bam',
 parser_preprocess.add_argument('tumor_bam',
                           help='''BAM file for tumor sample.''')
 
-parser_preprocess.add_argument('filename_base',
-                          help='''Base name of preprocessed files to be created.''')
+parser_preprocess.add_argument('input_filename_base',
+                          help='''Base name of the preprocessed input file to be created.''')
 
 parser_preprocess.add_argument('--min_depth', default=20, type=int,
                           help='''Minimum reads depth required for both normal and tumor samples. 
@@ -64,10 +64,13 @@ parser_preprocess.set_defaults(func=run_preprocess)
 #===============================================================================
 parser_run_model = subparsers.add_parser('run_model',
                                       help='''Run a probabilistic model based analysis. Requires preprocessed
-                                      files that have been created.''')
+                                      input file that have been created.''')
 
-parser_run_model.add_argument('filename_base',
-                            help='Base name of preprocessed files created.')
+parser_run_model.add_argument('input_filename_base',
+                            help='Base name of the preprocessed input file created.')
+
+parser_run_model.add_argument('output_filename_base',
+                            help='Base name of the output file to be created.')
 
 parser_run_model.add_argument('--max_copynumber', default=4, type=int,
                             help='''Maximum copy number of each segment allows to take. Default is 4.''')
@@ -97,13 +100,13 @@ parser_run_model.set_defaults(func=run_model)
 # Add postprocess sub-command
 #===============================================================================
 parser_postprocess = subparsers.add_parser('postprocess',
-                                      help='''Extract various result files.''')
+                                      help='''Extract various result files from the outputfile.''')
 
-parser_postprocess.add_argument('filename_base',
-                            help='''Base name of files created.''')
+parser_postprocess.add_argument('output_filename_base',
+                            help='''Base name of the output file created.''')
 
-parser_postprocess.add_argument('--Data', default=False, action='store_true',
-                          help='''Extract from *.Mixclone.data.pkl instead of *.Mixclone.results.pkl.
+parser_postprocess.add_argument('--input', default=False, action='store_true',
+                          help='''Extract from *.Mixclone.input.pkl instead of *.Mixclone.output.pkl.
                           Default is False.''')
 
 parser_postprocess.set_defaults(func=run_postprocess)
