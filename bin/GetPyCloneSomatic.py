@@ -22,12 +22,15 @@ def reads_to_bases(reads, pos):
 def get_CN(pos, chrom_vcf, starts, ends, chroms, p_copy, m_copy):
     J = len(starts)
     
+    minor_cn = -1
+    major_cn = -1
+
     for j in range(0, J):
-        if pos >= stars[j] and pos < ends[j]:
+        if pos >= starts[j] and pos < ends[j]:
             minor_cn = min(p_copy[j], m_copy[j])
             major_cn = max(p_copy[j], m_copy[j])
             
-        return (minor_cn, major_cn)
+            return (minor_cn, major_cn)
         
     print '%s\t%s not found in segments...' % (chrom_vcf, pos)
         
