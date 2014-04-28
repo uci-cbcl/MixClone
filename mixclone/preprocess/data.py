@@ -37,6 +37,7 @@ class Segment:
         self.copy_number = -1
         self.allele_type = 'NONE'
         self.subclone_prev = -1
+        self.subclone_cluster = 'NONE'
         
 
 class Data:
