@@ -61,14 +61,14 @@ def extract_segments(data, output_filename_base):
     
     outfile.write('\t'.join(['#seg_name', 'chrom', 'start', 'end', 'normal_reads_num',
                              'tumor_reads_num', 'LOH_frac', 'LOH_status', 'log2_ratio',
-                             'copy_number', 'allele_type', 'subclone_prev']) + '\n')
+                             'copy_number', 'allele_type', 'subclone_prev', 'subclone_cluster']) + '\n')
     
     for j in range(0, data.seg_num):
         outfile.write('\t'.join(map(str, [segments[j].name, segments[j].chrom_name,segments[j].start,
                                 segments[j].end, segments[j].normal_reads_num, segments[j].tumor_reads_num,
                                 segments[j].LOH_frac, segments[j].LOH_status, segments[j].log2_ratio,
                                 segments[j].copy_number, segments[j].allele_type,
-                                "{0:.3f}".format(segments[j].subclone_prev)])) + '\n')
+                                "{0:.3f}".format(segments[j].subclone_prev), segments[j].subclone_cluster])) + '\n')
 
     outfile.close()
     

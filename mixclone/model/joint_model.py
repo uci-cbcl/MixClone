@@ -132,11 +132,13 @@ class JointModelTrainer(ModelTrainer):
             h_j = self.config_parameters.allele_config[h_idx]
             c_H_j = self.config_parameters.allele_config_CN[h_idx]
             phi_j = self.model_parameters.parameters['phi'][phi_idx]
+            subclone_cluster = phi_idx + 1
             
             self.data.segments[j].allele_type = h_j
             self.data.segments[j].copy_number = c_H_j
             if h_j != constants.ALLELE_TYPE_BASELINE:
                 self.data.segments[j].subclone_prev = phi_j
+                self.data.segments[j].subclone_cluster = subclone_cluster
         
     def _print_running_info(self, ll_new, ll_old, ll_change, phi_init, iters):
         phi_init_str = map("{0:.3f}".format, phi_init.tolist())
