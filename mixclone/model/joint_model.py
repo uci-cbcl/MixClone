@@ -126,20 +126,36 @@ class JointModelTrainer(ModelTrainer):
     def predict(self):
         J = self.data.seg_num
         
-        for j in range(0, J):
-            h_idx = self.latent_variables.sufficient_statistics['psi'][j].argmax()
-            phi_idx = self.latent_variables.sufficient_statistics['kappa'][j].argmax()
-            h_j = self.config_parameters.allele_config[h_idx]
-            c_H_j = self.config_parameters.allele_config_CN[h_idx]
-            phi_j = self.model_parameters.parameters['phi'][phi_idx]
-            subclone_cluster = phi_idx + 1
+        for j in range(0, J):            
+            h_j, c_H_j, phi_j, subclone_cluster_j = self.predict_by_seg(j)
             
             self.data.segments[j].allele_type = h_j
             self.data.segments[j].copy_number = c_H_j
             if h_j != constants.ALLELE_TYPE_BASELINE:
                 self.data.segments[j].subclone_prev = phi_j
-                self.data.segments[j].subclone_cluster = subclone_cluster
+                self.data.segments[j].subclone_cluster = subclone_cluster_j
+    
+    def predict_by_seg(self, j):
+        h_j = 'NONE'
+        c_H_j = -1
+        phi_j = -1
+        subclone_cluster_j = 'NONE'
         
+        if self.data.segments[j].LOH_status != 'NONE':
+            h_idx = self.latent_variables.sufficient_statistics['psi'][j].argmax()
+            phi_idx = self.latent_variables.sufficient_statistics['kappa'][j].argmax()
+            h_j = self.config_parameters.allele_config[h_idx]
+        else:
+            ll_CNA_j = self.model_likelihood._ll_CNA_by_seg(self.model_parameters, j)
+            phi_idx, h_idx = np.unravel_index(ll_CNA_j.argmax(), ll_CNA_j.shape)
+            h_j = 'NONE'
+        
+        c_H_j = self.config_parameters.allele_config_CN[h_idx]
+        phi_j = self.model_parameters.parameters['phi'][phi_idx]
+        subclone_cluster_j = phi_idx + 1
+            
+        return (h_j, c_H_j, phi_j, subclone_cluster_j)
+    
     def _print_running_info(self, ll_new, ll_old, ll_change, phi_init, iters):
         phi_init_str = map("{0:.3f}".format, phi_init.tolist())
         phi_str = map("{0:.3f}".format, self.model_parameters.parameters['phi'].tolist())
@@ -170,6 +186,9 @@ class JointModelTrainer(ModelTrainer):
         ll = 0
         
         for j in range(0, J):
+            if self.data.segments[j].LOH_status == 'NONE':
+                continue
+            
             ll_j = self.model_likelihood.ll_by_seg(self.model_parameters, j)
             ll_j = np.log(rho[j].reshape((1, H))) + np.log(pi.reshape((K, 1))) + ll_j
             
@@ -197,6 +216,9 @@ class JointModelTrainer(ModelTrainer):
         phi = self.model_parameters.parameters['phi']
         
         for j in range(0, J):
+            if self.data.segments[j].LOH_status == 'NONE':
+                continue
+            
             ll_j = self.model_likelihood.ll_by_seg(self.model_parameters, j)
             ll_j = np.log(rho[j].reshape((1, H))) + np.log(pi.reshape((K, 1))) + ll_j
             
@@ -245,7 +267,7 @@ class JointModelTrainer(ModelTrainer):
         kappa_ = np.zeros(K)
         
         for j in range(0, J):
-            if self.data.segments[j].LOH_status == 'FALSE':
+            if self.data.segments[j].LOH_status == 'FALSE' or self.data.segments[j].LOH_status == 'NONE':
                 continue
             
             kappa_ += kappa[j]
@@ -437,6 +459,9 @@ class JointModelLikelihood(ModelLikelihood):
         ll = 0
         
         for j in range(0, J):
+            if self.data.segments[j].LOH_status == 'NONE':
+                continue
+            
             ll_j = self.complete_ll_by_subclone_seg(model_parameters, k, j)
             ll_j = np.log(rho[j].reshape((1, H))) + np.log(pi[k]) + ll_j
             ll_j = kappa[j, k]*psi[j].reshape((1, H))*ll_j
