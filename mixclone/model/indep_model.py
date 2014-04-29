@@ -85,6 +85,11 @@ class IndepModelTrainer(ModelTrainer):
                 phi_lst.append(-1)
                 continue
             
+            if self.data.segments[j].LOH_status == 'TRUE' and check_balance_allele_type(h_T) == True:
+                ll_lst.append(-1.0*constants.INF)
+                phi_lst.append(-1)
+                continue
+            
             ll, phi = self.bisec_search_ll(j, h)
             ll_lst.append(ll)
             phi_lst.append(phi)
