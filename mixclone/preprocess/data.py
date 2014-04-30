@@ -31,7 +31,7 @@ class Segment:
         self.sites_num = 0
         self.LOH_frac = 0.0
         self.LOH_status = 'NONE'
-        self.baseline_label = False
+        self.baseline_label = 'FALSE'
         self.log2_ratio = 0.0
         self.paired_counts = None
         self.BAF_counts = None
@@ -115,7 +115,7 @@ class Data:
             ratio = self.segments[j].tumor_reads_num*1.0/self.segments[j].normal_reads_num
             
             if self.segments[j].LOH_status == 'FALSE' and ratio in reads_depth_ratio:
-                self.segments[j].baseline_label = True
+                self.segments[j].baseline_label = 'TRUE'
         
         if reads_depth_ratio.shape[0] != 0:
             self.Lambda_S = reads_depth_ratio.mean()

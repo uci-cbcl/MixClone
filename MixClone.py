@@ -87,12 +87,12 @@ parser_run_model.add_argument('--priors', default=None, type=str,
                              help='''File of the prior distribution. If not provided,
                                 use uniform prior. Default is None.''')
 
-parser_run_model.add_argument('--max_iters', default=100, type=int,
-                          help='''Maximum number of iterations for training. Default is 100.''')
+parser_run_model.add_argument('--max_iters', default=30, type=int,
+                          help='''Maximum number of iterations for training. Default is 30.''')
 
-parser_run_model.add_argument('--stop_value', default=1e-7, type=float,
+parser_run_model.add_argument('--stop_value', default=1e-6, type=float,
                           help='''Stop value of the EM algorithm for training. If the change of log-likelihood is lower
-                          than this value, stop training. Default is 1e-7.''')
+                          than this value, stop training. Default is 1e-6.''')
 
 parser_run_model.set_defaults(func=run_model)
 

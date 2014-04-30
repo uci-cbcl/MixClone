@@ -197,6 +197,12 @@ class JointModelTrainer(ModelTrainer):
             
                 if self.data.segments[j].LOH_status == 'FALSE' and check_balance_allele_type(h_T) == False:
                     ll_j[:, h] = -1.0*constants.INF
+                    
+                if self.data.segments[j].LOH_status == 'TRUE' and check_balance_allele_type(h_T) == True:
+                    ll_j[:, h] = -1.0*constants.INF
+                    
+                if self.data.segments[j].baseline_label == 'TRUE' and h_T != constants.ALLELE_TYPE_BASELINE:
+                    ll_j[:, h] = -1.0*constants.INF
             
             ll_j = np.logaddexp.reduce(ll_j, axis=1)
             ll_j = np.logaddexp.reduce(ll_j, axis=0)
@@ -229,6 +235,9 @@ class JointModelTrainer(ModelTrainer):
                     ll_j[:, h] = -1.0*constants.INF
                     
                 if self.data.segments[j].LOH_status == 'TRUE' and check_balance_allele_type(h_T) == True:
+                    ll_j[:, h] = -1.0*constants.INF
+                    
+                if self.data.segments[j].baseline_label == 'TRUE' and h_T != constants.ALLELE_TYPE_BASELINE:
                     ll_j[:, h] = -1.0*constants.INF
             
             psi_j_temp = np.logaddexp.reduce(ll_j, axis=0)
