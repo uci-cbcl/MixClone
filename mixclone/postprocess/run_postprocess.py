@@ -24,18 +24,17 @@ from mixclone import constants
 from mixclone.preprocess.data import Data
 
 def run_postprocess(args):
-    if args.input == True:
-        file_name = args.output_filename_base + '.MixClone.input.pkl'
-    else:
-        file_name = args.output_filename_base + '.MixClone.output.pkl'
-    
+    file_name = args.output_filename_base + '.MixClone.output.pkl'    
     infile = open(file_name, 'rb')
-    data = pkl.load(infile)
-    infile.close()
+    
+    trainer = pkl.load(infile)
+    data = trainer.data
     
     extract_paired_counts(data, args.output_filename_base)
     
     extract_segments(data, args.output_filename_base)
+    
+    infile.close()
     
         
 def extract_paired_counts(data, output_filename_base):

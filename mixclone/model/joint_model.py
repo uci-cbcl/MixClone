@@ -310,9 +310,6 @@ class JointModelTrainer(ModelTrainer):
             self.model_parameters.parameters['phi'][k] = phi_right
             ll_right = self.model_likelihood.complete_ll_by_subclone(self.model_parameters, self.latent_variables, k)
             
-            #print 'left\t' + str(phi_left) + '\t' + str(ll_left)
-            #print 'right\t' + str(phi_right) + '\t' + str(ll_right)
-            
             if ll_left >= ll_right:
                 phi_change = phi_end - phi_right
                 phi_end = phi_right
@@ -491,6 +488,7 @@ class JointModelLikelihood(ModelLikelihood):
         
         ll += self._ll_CNA_by_subclone_seg(phi[k], j)
         #ll += self._ll_LOH_by_subclone_seg(phi[k], j)
+        #CNA data is effectively enough to estimate phi, and LOH computation is slow
         
         return ll
         

@@ -105,10 +105,6 @@ parser_postprocess = subparsers.add_parser('postprocess',
 parser_postprocess.add_argument('output_filename_base',
                             help='''Base name of the output file created.''')
 
-parser_postprocess.add_argument('--input', default=False, action='store_true',
-                          help='''Extract from *.Mixclone.input.pkl instead of *.Mixclone.output.pkl.
-                          Default is False.''')
-
 parser_postprocess.set_defaults(func=run_postprocess)
 
 #===============================================================================

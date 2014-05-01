@@ -62,13 +62,12 @@ class ProbabilisticModel(object):
         trainer.train()
         trainer.predict()
         
-        self.data = trainer.data
-        self.ll = trainer.ll
+        self.trainer = trainer
         
     def write_results(self, output_filename_base):
         results_file_name = output_filename_base + '.MixClone.output.pkl'
         outfile = open(results_file_name, 'wb')
-        pkl.dump(self.data, outfile, protocol=2)
+        pkl.dump(self.trainer, outfile, protocol=2)
         
         outfile.close()
 
