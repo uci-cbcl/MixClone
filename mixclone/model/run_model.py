@@ -29,14 +29,6 @@ def run_model(args):
     
     time_start = time.time()
     
-    ## run the independent model
-    #indep_model = IndepProbabilisticModel(args.max_copynumber, args.subclone_num, args.baseline_thred)
-    #indep_model.read_priors(args.priors)
-    #indep_model.read_data(args.filename_base)
-    #indep_model.preprocess()
-    #indep_model.run(args.max_iters, args.stop_value)
-    #indep_model.write_results(args.filename_base)
-    
     # run the joint model
     joint_model = JointProbabilisticModel(args.max_copynumber, args.subclone_num, args.baseline_thred)
     joint_model.read_priors(args.priors)
@@ -50,7 +42,7 @@ def run_model(args):
     print "*" * 100
     print "* Finish."
     print "* Run time : {0:.2f} seconds".format(time_end - time_start)
-    print "* Optimum Log-likelihood : ", joint_model.trainer.ll
+    print "* Optimum log-likelihood : ", joint_model.trainer.ll
     print "*" * 100
     sys.stdout.flush()
     

@@ -29,12 +29,16 @@ def run_postprocess(args):
     
     trainer = pkl.load(infile)
     data = trainer.data
+    config_parameters = trainer.config_parameters
+    model_parameters = trainer.model_parameters
+    latent_variables = trainer.latent_variables
+    ll = trainer.ll
     
     extract_paired_counts(data, args.output_filename_base)
-    
     extract_segments(data, args.output_filename_base)
-    
     extract_BAFheatmap(data, args.output_filename_base)
+    extract_summary(model_parameters, config_parameters,
+                    ll, args.output_filename_base)
     
     infile.close()
     
@@ -111,4 +115,24 @@ def extract_BAFheatmap(data, output_filename_base):
         cbar.ax.set_yticklabels(['0', '>= ' + str(int(color_max_j))])
         plt.savefig('./' + outheatmap_dir_name + '/' + seg_name_j, bbox_inches='tight')
     
+    
+def extract_summary(model_parameters, config_parameters, ll, output_filename_base):
+    summary_file_name = output_filename_base + '.MixClone.summary'
+    outfile = open(summary_file_name, 'w')
+    
+    phi = model_parameters.parameters['phi']
+    subclone_cluster = '\t'.join(map(str, range(1, config_parameters.subclone_num+1)))
+    subclone_prev = '\t'.join(map("{0:.3f}".format, phi.tolist()))
+
+    print "Extracting summary file..."
+    sys.stdout.flush()
+    
+    outfile.write("Model : joint\n")
+    outfile.write("Maximum copy number : %s\n" % (config_parameters.max_copynumber))
+    outfile.write("Subclone number : %s\n" % (config_parameters.subclone_num))
+    outfile.write("Subclone cluster :             %s\n" % subclone_cluster)
+    outfile.write("Subclone cellular prevalence : %s\n" % subclone_prev)
+    outfile.write("Optimum log-likelihood : %s\n" % (ll))
+    
+    outfile.close()
     
