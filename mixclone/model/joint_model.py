@@ -39,6 +39,8 @@ class JointProbabilisticModel(ProbabilisticModel):
         
     def _init_components(self):
         self.model_trainer_class = JointModelTrainer
+        
+        self.priors = {}
 
 
 class JointModelTrainer(ModelTrainer):

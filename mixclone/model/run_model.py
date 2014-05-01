@@ -31,7 +31,6 @@ def run_model(args):
     
     # run the joint model
     joint_model = JointProbabilisticModel(args.max_copynumber, args.subclone_num, args.baseline_thred)
-    joint_model.read_priors(args.priors)
     joint_model.read_data(args.input_filename_base)
     joint_model.preprocess()
     joint_model.run(args.max_iters, args.stop_value)
