@@ -15,6 +15,8 @@ import numpy as np
 
 BAF_N_MIN = 0.4
 BAF_N_MAX = 0.6
+BAF_COUNTS_MIN = 10
+BAF_COUNTS_MAX = 95
 BAF_BINS = np.array(range(0, 100 + 1))/100.0
 LOH_FRAC_MAX = 0.11
 SITES_NUM_MIN = 20
@@ -42,6 +44,8 @@ ALLELE_TYPE_BASELINE = 'PM'
 UPDATE_WEIGHTS = {}
 UPDATE_WEIGHTS['x'] = 0.9
 UPDATE_WEIGHTS['y'] = 0.1
+
+
 
 CHROM_START = 0
 
