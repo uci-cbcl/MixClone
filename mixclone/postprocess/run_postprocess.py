@@ -37,6 +37,7 @@ def run_postprocess(args):
     extract_paired_counts(data, args.output_filename_base)
     extract_segments(data, args.output_filename_base)
     extract_BAFheatmap(data, args.output_filename_base)
+    extract_seg_plot(data, args.output_filename_base)
     extract_summary(model_parameters, config_parameters,
                     ll, args.output_filename_base)
     
@@ -114,7 +115,36 @@ def extract_BAFheatmap(data, output_filename_base):
         cbar = plt.colorbar(ticks=[0, color_max_j], orientation='vertical', shrink=0.78)
         cbar.ax.set_yticklabels(['0', '>= ' + str(int(color_max_j))])
         plt.savefig('./' + outheatmap_dir_name + '/' + seg_name_j, bbox_inches='tight')
+
+
+def extract_seg_plot(data, output_filename_base):
+    subclone_plot_file_name = output_filename_base + '.MixClone.segplot.png'
     
+    subclone_prev_lst = []
+    copynumber_lst = []
+    seg_num = data.seg_num
+
+    print "Extracting segments plot file..."
+    sys.stdout.flush()
+
+    for j in range(0, seg_num):
+        if data.segments[j].baseline_label == True or data.segments[j].allele_type == 'PM':
+            continue
+        subclone_prev_lst.append(data.segments[j].subclone_prev)
+        copynumber_lst.append(data.segments[j].copy_number)
+
+    X = len(subclone_prev_lst)
+    
+    plt.figure(figsize=(8,8), dpi = 150)
+    plt.plot(range(1, X+1), subclone_prev_lst, 's')
+    plt.xlim(0, X+1)
+    plt.ylim(0, 1)
+    plt.xlabel('Copy number')
+    plt.ylabel('Subclonal cellular prevalence')
+    plt.xticks(sp.linspace(1, X, X), copynumber_lst)
+    plt.yticks(sp.linspace(0, 1, 11), ['0%', '10%', '20%', '30%', '40%', '50%', '60%', '70%', '80%', '90%', '100%'])
+    plt.savefig(subclone_plot_file_name, bbox_inches='tight')
+
     
 def extract_summary(model_parameters, config_parameters, ll, output_filename_base):
     summary_file_name = output_filename_base + '.MixClone.summary'
@@ -131,7 +161,7 @@ def extract_summary(model_parameters, config_parameters, ll, output_filename_bas
     outfile.write("Maximum copy number : %s\n" % (config_parameters.max_copynumber))
     outfile.write("Subclone number : %s\n" % (config_parameters.subclone_num))
     outfile.write("Subclone cluster :             %s\n" % subclone_cluster)
-    outfile.write("Subclone cellular prevalence : %s\n" % subclone_prev)
+    outfile.write("Subclonal cellular prevalence : %s\n" % subclone_prev)
     outfile.write("Optimum log-likelihood : %s\n" % (ll))
     
     outfile.close()
