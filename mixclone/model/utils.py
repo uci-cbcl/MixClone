@@ -254,6 +254,15 @@ def get_phi_init(subclone_num):
     
     return phi_init[subclone_num]
 
+def model_selection_by_ll(ll_lst, subclone_num_lst):
+    ll_change_ratio = []
     
+    for k in range(0, len(ll_lst)-1):
+        ll_change_ratio.append(np.abs(ll_lst[k+1] - ll_lst[k])*1.0/np.abs(ll_lst[k+1]))
+
+    for i in range(0, len(ll_change_ratio)):
+        if ll_change_ratio[i] < constants.LL_CHANGE_THRED:
+            return (subclone_num_lst[i], ll_change_ratio)
     
+    return (subclone_num_lst[i+1], ll_change_ratio)
 
