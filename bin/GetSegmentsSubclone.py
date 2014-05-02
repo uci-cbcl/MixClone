@@ -20,6 +20,8 @@ q21_1_ends['chr1'] = 148000000
 excludes_starts['chr1'] = 121237000
 excludes_ends['chr1'] = 148000000
 
+close_thred = 0.15
+
 chrom_start = 0
 
 chrom_list = ['chr1', 'chr2', 'chr3', 'chr4', 'chr5', 'chr6', 'chr7', 'chr8',
@@ -91,7 +93,15 @@ def get_P_M_copy(genotype):
         
     return (P_copy, M_copy)
 
-
+def too_close(subclone_prevs):
+    subclone_num = len(subclone_prevs)
+    
+    for i in range(0, subclone_num):
+        for j in range(i+1, subclone_num):
+            if abs(subclone_prevs[i] - subclone_prevs[j]) < close_thred:
+                return True
+            
+    return False
 
 def main():
     outfile = open(sys.argv[1], 'w')
@@ -112,8 +122,11 @@ def main():
     genotype_probs = get_probs(genotype)
     P_copy, M_copy = get_P_M_copy(genotype)
     
-    subclone_prevs = random.sample(subclone_prev_range, subclone_num)
-
+    while True:
+        subclone_prevs = random.sample(subclone_prev_range, subclone_num)
+        if too_close(subclone_prevs) == False:
+            break
+    
     p_alpha = np.random.random_integers(1, p_seg_num, p_seg_num)
     q_alpha = np.random.random_integers(1, q_seg_num, q_seg_num)
     
