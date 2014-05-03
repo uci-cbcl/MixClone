@@ -75,33 +75,60 @@ def run_all_subclone(args):
         
         ll_lst.append(joint_model.trainer.ll)
         subclone_num_lst.append(subclone_num)
-        
-    subclone_num_optimum, ll_change_ratio = model_selection_by_ll(ll_lst,
-                                                        subclone_num_lst)
-
-    model_selection_filename = args.output_filename_base + '.MixClone.model_selection'
-    outfile = open(model_selection_filename, 'w')
     
     time_end = time.time()
     
+    run_time = time_end - time_start
+    
+    get_summary(ll_lst, subclone_num_lst, run_time, args.output_filename_base)
+
+
+def get_summary(ll_lst, subclone_num_lst, run_time, output_filename_base):
+    model_selection_filename = output_filename_base + '.MixClone.model_selection'
+    outfile = open(model_selection_filename, 'w')
+
+    subclone_num_optimum, ll_change_ratio, ll_change_percent, ll_change_ratio_total = \
+    model_selection_by_ll(ll_lst, subclone_num_lst)
+    
     print "*" * 100
     print "* Finish."
-    print "* Run time : {0:.2f} seconds".format(time_end - time_start)
+    print "* Run time : {0:.2f} seconds".format(run_time)
+    print "*" * 100
     
     for i in range(0, 5):
         print "* Log-likelihood for subclone number %s : %s" % (i+1, ll_lst[i])
         outfile.write('Log-likelihood for subclone number %s : %s\n' % (i+1, ll_lst[i]))
+    
+    print "*" * 100
+    outfile.write("*" * 100 + '\n')
         
     for i in range(0, 4):
-        print "* Log-likelihood ratio change for subclone number %s -> %s : %s" \
+        print "* Log-likelihood change ratio for subclone number %s -> %s : %s" \
         % (i+1, i+2, ll_change_ratio[i])
-        outfile.write('Log-likelihood ratio change for subclone number %s -> %s : %s\n' \
+        outfile.write('Log-likelihood change ratio for subclone number %s -> %s : %s\n' \
         % (i+1, i+2, ll_change_ratio[i]))
+        
+    print "* Log-likelihood change ratio in total for subclone number %s -> %s : %s" \
+    % (1, 5, ll_change_ratio_total)
+    outfile.write('Log-likelihood change ratio in total for subclone number %s -> %s : %s\n' \
+    % (1, 5, ll_change_ratio_total))
+
+    print "*" * 100
+    outfile.write("*" * 100 + '\n')
+
+    for i in range(0, 4):
+        print "* Log-likelihood cumulative change percent for subclone number %s -> %s : %s" \
+        % (1, i+2, ll_change_percent[i])
+        outfile.write('Log-likelihood cumulative change percent for subclone number %s -> %s : %s\n' \
+        % (1, i+2, ll_change_percent[i]))
+
+    print "*" * 100
+    outfile.write("*" * 100 + '\n')
     
-    print "* Optimum subclone number : ", subclone_num_optimum
+    print "* Suggested subclone number : ", subclone_num_optimum
     print "*" * 100
     sys.stdout.flush()
     
-    outfile.write('Optimum subclone number : %s\n' % (subclone_num_optimum))
+    outfile.write('Suggested subclone number : %s\n' % (subclone_num_optimum))
     
     outfile.close()

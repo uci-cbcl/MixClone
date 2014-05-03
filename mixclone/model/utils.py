@@ -254,15 +254,40 @@ def get_phi_init(subclone_num):
     
     return phi_init[subclone_num]
 
+#def model_selection_by_ll_ratio(ll_lst, subclone_num_lst):
+#    ll_change_ratio = []
+#    
+#    for k in range(0, len(ll_lst)-1):
+#        ll_change_ratio.append(np.abs(ll_lst[k+1] - ll_lst[k])*1.0/np.abs(ll_lst[k+1]))
+#
+#    for i in range(0, len(ll_change_ratio)):
+#        if ll_change_ratio[i] < constants.LL_RATIO_CHANGE_THRED:
+#            return (subclone_num_lst[i], ll_change_ratio)
+#    
+#    return (subclone_num_lst[i+1], ll_change_ratio)
+    
 def model_selection_by_ll(ll_lst, subclone_num_lst):
+    ll_change_total = np.abs(ll_lst[-1] - ll_lst[0])
+    ll_change_ratio_total = ll_change_total*1.0/np.abs(ll_lst[0])
     ll_change_ratio = []
+    ll_change_percent = []
+    
+    ll_cumulat = 0
     
     for k in range(0, len(ll_lst)-1):
-        ll_change_ratio.append(np.abs(ll_lst[k+1] - ll_lst[k])*1.0/np.abs(ll_lst[k+1]))
-
-    for i in range(0, len(ll_change_ratio)):
-        if ll_change_ratio[i] < constants.LL_CHANGE_THRED:
-            return (subclone_num_lst[i], ll_change_ratio)
+        ratio = np.abs(ll_lst[k+1] - ll_lst[k])*1.0/np.abs(ll_lst[k+1])
+        percent = np.abs(ll_lst[k+1] - ll_lst[k])*1.0/ll_change_total
+        ll_cumulat += percent
+        
+        ll_change_ratio.append(ratio)
+        ll_change_percent.append(ll_cumulat)
     
-    return (subclone_num_lst[i+1], ll_change_ratio)
+    if ll_change_ratio_total < constants.LL_RATIO_CHANGE_THRED:
+        return (subclone_num_lst[0], ll_change_ratio, ll_change_percent, ll_change_ratio_total)
+    
+    for i in range(0, len(ll_change_percent)):
+        if ll_change_percent[i] > constants.LL_PERCENT_CHANGE_THRED:
+            return (subclone_num_lst[i+1], ll_change_ratio, ll_change_percent, ll_change_ratio_total)
+            
+    return (subclone_num_lst[i+1], ll_change_ratio, ll_change_percent, ll_change_ratio_total)
 

@@ -29,7 +29,8 @@ BURN_IN = 10
 EPS = np.finfo(float).eps
 ETA = 1.0
 INF = float('inf')
-LL_CHANGE_THRED = 0.01
+LL_RATIO_CHANGE_THRED = 0.01
+LL_PERCENT_CHANGE_THRED = 0.90
 
 TAU = 500
 SIGMA = 0.0001
