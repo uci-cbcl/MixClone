@@ -76,9 +76,9 @@ def main():
     plt.ylabel('Subclonal cellular prevalence')
     for i in range(0, len(subclone_true_lst)):
         if i == 0:
-            plt.plot([start_base_lst[i], end_base_lst[i]], [subclone_base_lst[i]+0.002, subclone_base_lst[i]+0.002], '-', color = 'y', linewidth=1.5, label = 'Ground truth diploid')
+            plt.plot([start_base_lst[i], end_base_lst[i]], [subclone_base_lst[i]+0.002, subclone_base_lst[i]+0.002], '-', color = 'c', linewidth=1.5, label = 'Ground truth diploid')
         else:
-            plt.plot([start_base_lst[i], end_base_lst[i]], [subclone_base_lst[i]+0.002, subclone_base_lst[i]+0.002], '-', color = 'y', linewidth=1.5)
+            plt.plot([start_base_lst[i], end_base_lst[i]], [subclone_base_lst[i]+0.002, subclone_base_lst[i]+0.002], '-', color = 'c', linewidth=1.5)
     for i in range(0, len(subclone_true_lst)):
         if i == 0:
             plt.plot([start_true_lst[i], end_true_lst[i]], [subclone_true_lst[i]+0.002, subclone_true_lst[i]+0.002], '-', color = 'r', linewidth=1.5, label = 'Ground truth non-diploid')
