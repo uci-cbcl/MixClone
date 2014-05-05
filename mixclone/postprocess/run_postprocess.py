@@ -136,7 +136,7 @@ def extract_seg_plot(data, output_filename_base):
     X = len(subclone_prev_lst)
     
     plt.figure(figsize=(8,8), dpi = 150)
-    plt.plot(range(1, X+1), subclone_prev_lst, 's')
+    plt.plot(range(1, X+1), subclone_prev_lst, 'o')
     plt.xlim(0, X+1)
     plt.ylim(0, 1)
     plt.xlabel('Copy number')
