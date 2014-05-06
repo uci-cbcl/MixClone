@@ -84,7 +84,7 @@ def main():
             plt.plot([start_true_lst[i], end_true_lst[i]], [subclone_true_lst[i]+0.002, subclone_true_lst[i]+0.002], '-', color = 'r', linewidth=1.5, label = 'Ground truth non-diploid')
         else:
             plt.plot([start_true_lst[i], end_true_lst[i]], [subclone_true_lst[i]+0.002, subclone_true_lst[i]+0.002], '-', color = 'r', linewidth=1.5)
-    plt.plot(pos_lst, subclone_pyclone_lst, 'g.', ms=6, label = 'PyClone')
+    plt.plot(pos_lst, subclone_pyclone_lst, 'y.', ms=6, label = 'PyClone')
     for i in range(0, len(subclone_mixclone_lst)):
         if i == 0:
             plt.plot([start_true_lst[i], end_true_lst[i]], [subclone_mixclone_lst[i]-0.002, subclone_mixclone_lst[i]-0.002], '-', color = 'b', linewidth=1.5, label = 'MixClone')

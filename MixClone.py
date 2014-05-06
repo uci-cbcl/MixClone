@@ -72,8 +72,8 @@ parser_run_model.add_argument('input_filename_base',
 parser_run_model.add_argument('output_filename_base',
                             help='Base name of the output file to be created.')
 
-parser_run_model.add_argument('--max_copynumber', default=4, type=int,
-                            help='''Maximum copy number of each segment allows to take. Default is 4.''')
+parser_run_model.add_argument('--max_copynumber', default=6, type=int,
+                            help='''Maximum copy number of each segment allows to take. Default is 6.''')
 
 parser_run_model.add_argument('--subclone_num', default=0, type=int,
                             help='''Number of subclones within the tumor sample. If not provided,
