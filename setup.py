@@ -3,7 +3,7 @@ from distutils.core import setup
 setup(
       name = 'MixClone',
       version = '1.0',
-      description = 'MixClone: inferring tumor subclonal populations by integrating somatic copy number alterations and allele frequencies',
+      description = 'MixClone: a mixture model for inferring tumor subclonal populations',
       author = 'Yi Li, Andrew Roth',
       author_email = 'yil8@uci.edu, andrewjlroth@gmail.com',
       url = 'https://github.com/uci-cbcl/MixClone',
