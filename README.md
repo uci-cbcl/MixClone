@@ -34,8 +34,7 @@ Prerequisites
 * [matplotlib](http://matplotlib.org/)(>=1.2.0) is required for a few visualization tools.
 
 
-Altough not required by MixClone, [samtools](http://samtools.sourceforge.net/) can be useful for creating bam, bam index and fasta index 
-files which are required by the pysam module of MixClone. 
+Altough not required by MixClone, [samtools](http://samtools.sourceforge.net/) can be useful for creating bam, bam index and fasta index files which are required by the pysam module of MixClone. 
 
 Install from source
 -------------------
@@ -52,9 +51,7 @@ If you prefer to install MixClone other than the default directory, you can also
 $ python setup.py install --prefix /home/yili/
 ```
 
-There is also a `bin/` folders under MixClone-*. The `bin/` folder contains 
-useful utilities, such as the R code to run [BICseq](http://compbio.med.harvard.edu/Supplements/PNAS11.html) and the python script to 
-convert BICseq results to BED file. You can copy these two folders somewhere easily accessible.
+There is also a `bin/` folders under MixClone-*. The `bin/` folder contains useful utilities, such as the R code to run [BICseq](http://compbio.med.harvard.edu/Supplements/PNAS11.html) and the python script to convert BICseq results to BED file. You can copy these two folders somewhere easily accessible.
 
 
 
@@ -75,13 +72,11 @@ MixClone is composed of three modules:
 
 Tumor genome segmentation
 -------------------------
-MixClone requires a segmentation file of the tumor genome in BED format before running the package. We used [BICseq](http://compbio.med.harvard.edu/Supplements/PNAS11.html) in the original paper. To run a BICseq analysis, you
-can copy the commands in `bin/BICseq.R` (Li, Y., Xie, X. 2014, Bioinformatics) and paste them in a R interative shell. Or you can also run the R script from the command line:
+MixClone requires a segmentation file of the tumor genome in BED format before running the package. We used [BICseq](http://compbio.med.harvard.edu/Supplements/PNAS11.html) in the original paper. To run a BICseq analysis, you can copy the commands in `bin/BICseq.R` (Li, Y., Xie, X. 2014, Bioinformatics) and paste them in a R interative shell. Or you can also run the R script from the command line:
 ```
 $ R CMD BATCH bin/BICseq.R
 ```
-Note that,`normal.bam` and `tumor.bam` must be in the same directory where you run the command. The R script will output a segments file
-`segments.BICseq`. Then you can use the other script `bin/BICseq2bed.py` (Li, Y., Xie, X. 2014, Bioinformatics) to convert the segments file into BED format:
+Note that,`normal.bam` and `tumor.bam` must be in the same directory where you run the command. The R script will output a segments file `segments.BICseq`. Then you can use the other script `bin/BICseq2bed.py` (Li, Y., Xie, X. 2014, Bioinformatics) to convert the segments file into BED format:
 ```
 $ BICseq2bed.py segments.BICseq segments.bed --seg_length 1000000
 ```
@@ -92,22 +87,19 @@ $ BICseq2bed.py segments.BICseq segments.bed --seg_length 1000000
 
 Preprocess
 ----------
-This part of README is based on [JoinSNVMix](https://code.google.com/p/joint-snv-mix/wiki/runningOld). To preprocess the paired 
-cancer sequencing data, execute:
+This part of README is based on [JoinSNVMix](https://code.google.com/p/joint-snv-mix/wiki/runningOld). To preprocess the paired cancer sequencing data, execute:
 ```
 $ MixClone.py preprocess REFERENCE_GENOME.fasta SEGMENTS.bed NORMAL.bam TUMOUR.bam INPUT_BASENAME --min_depth 20 --min_base_qual 10 --min_map_qual 10 --process_num 10
 ```
 
 **REFERENCE_GENOME.fasta** The path to the fasta file that the paired BAM files aligned to. Currently, only the
-[UCSC](https://genome.ucsc.edu/FAQ/FAQformat.html#format1) and [ENSEMBL](http://uswest.ensembl.org/info/website/upload/bed.html)
-chromosome format are supported. Note that the index file should be generated for the reference genome. This can be done by running samtools as follows:
+[UCSC](https://genome.ucsc.edu/FAQ/FAQformat.html#format1) and [ENSEMBL](http://uswest.ensembl.org/info/website/upload/bed.html) chromosome format are supported. Note that the index file should be generated for the reference genome. This can be done by running samtools as follows:
 
 `$ samtools faidx REFERENCE_GENOME.fasta`
 
 **SEGMENTS.bed** The BED file for the tumor genome segmentation.
 
-**NORMAL.bam** The BAM file for the normal sample. The BAM index file should be generated for this file and named NORMAL.bam.bai. This can
-be done by running
+**NORMAL.bam** The BAM file for the normal sample. The BAM index file should be generated for this file and named NORMAL.bam.bai. This can be done by running
 
 `$ samtools index NORMAL.bam`
 
@@ -158,8 +150,7 @@ $ MixClone.py postprocess OUTPUT_BASENAME
 
 Output files
 ------------
-**\*.MixClone.segments** The segments file. It contains the genomic and subclonal information of each segment. The definition of each
-column in a *.MixClone.segments file is listed here:
+**\*.MixClone.segments** The segments file. It contains the genomic and subclonal information of each segment. The definition of each column in a *.MixClone.segments file is listed here:
 
 | Column           | Definition                                                              | 
 | :--------------- | :---------------------------------------------------------------------- | 
@@ -177,8 +168,7 @@ column in a *.MixClone.segments file is listed here:
 | subclone_prev    | Estimated subclonal cellular prevalence of the segment                  |
 | subclone_cluster | Estimated subclonal cluster label of the segment                        |
 
-**\*.MixClone.counts** The allele counts file. It contains the allelic counts information of sites, which are heterozygous 
-SNP sites in the normal genome. The definition of each column in a *.MixClone.counts file is listed here:
+**\*.MixClone.counts** The allele counts file. It contains the allelic counts information of sites, which are heterozygous SNP sites in the normal genome. The definition of each column in a *.MixClone.counts file is listed here:
 
 | Column    | Definition                                         | 
 | :-------- | :------------------------------------------------- | 
