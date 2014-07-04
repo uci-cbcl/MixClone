@@ -21,8 +21,6 @@ INSTALL
 
 Prerequisites
 -------------
-* Although not mandatory, Linux system is recommended.
-
 **Mandatory** 
 
 * Python (2.7). [Python 2.7.3](http://www.python.org/download/releases/2.7.3/) is recommended.
@@ -38,7 +36,7 @@ Prerequisites
 * [matplotlib](http://matplotlib.org/)(>=1.2.0) is required for a few visualization tools.
 
 
-Altough not required by MixClone, [samtools](http://samtools.sourceforge.net/) can be useful for creating bam, bam index and fasta index files which are required by the pysam module of MixClone. 
+Although not mandatory, Linux system is recommended. Also, [samtools](http://samtools.sourceforge.net/) is not required by MixClone, but can be useful for creating bam, bam index and fasta index files which are required by the pysam module of MixClone. 
 
 Install from source
 -------------------
