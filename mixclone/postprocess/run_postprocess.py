@@ -18,8 +18,13 @@ import pickle as pkl
 
 import numpy as np
 import scipy as sp
-from matplotlib import pyplot as plt
 
+PLT_AVAIL = True
+try:
+    from matplotlib import pyplot as plt
+except:
+    PLT_AVAIL = False
+    
 from mixclone import constants
 from mixclone.preprocess.data import Data
 
@@ -36,8 +41,14 @@ def run_postprocess(args):
     
     extract_paired_counts(data, args.output_filename_base)
     extract_segments(data, args.output_filename_base)
-    extract_BAFheatmap(data, args.output_filename_base)
-    extract_seg_plot(data, args.output_filename_base)
+    
+    if PLT_AVAIL == True:
+        extract_BAFheatmap(data, args.output_filename_base)
+        extract_seg_plot(data, args.output_filename_base)
+    else:
+        print "matplotlib.pyplot not available, skip plotting..."
+        sys.stdout.flush()
+    
     extract_summary(model_parameters, config_parameters,
                     ll, args.output_filename_base)
     

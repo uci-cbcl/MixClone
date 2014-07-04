@@ -184,7 +184,10 @@ def remove_outliers(X):
     for i in range(0, n):
         if np.abs(X[i] - X.mean()) <= X.std():
             idx_keep.append(i)
-            
+    
+    if len(idx_keep) == 0 or len(idx_keep) == n:
+        return X
+    
     X = X[idx_keep]
     
     if X.std() < std_thred:
