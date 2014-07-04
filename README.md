@@ -1,4 +1,4 @@
-README for MixClone 1.0
+README for MixClone 1.1
 =======================
 
 
@@ -23,6 +23,8 @@ Prerequisites
 -------------
 * Although not mandatory, Linux system is recommended.
 
+**Mandatory** 
+
 * Python (2.7). [Python 2.7.3](http://www.python.org/download/releases/2.7.3/) is recommended.
 
 * [Numpy](http://www.numpy.org/)(>=1.6.1). You can download the source of Numpy from [here](http://sourceforge.net/projects/numpy/files/).
@@ -31,6 +33,8 @@ Prerequisites
 
 * [Pysam](https://code.google.com/p/pysam/)(>=0.7). To install Pysam, you also need to install [Cython](http://cython.org/) first. 
 
+
+**Optional** 
 * [matplotlib](http://matplotlib.org/)(>=1.2.0) is required for a few visualization tools.
 
 
