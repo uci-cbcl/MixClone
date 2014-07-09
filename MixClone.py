@@ -83,6 +83,9 @@ parser_run_model.add_argument('--baseline_thred', default=0.09, type=float,
                             help='''The threshold of LOH SNP sites fraction within each segment to
                             define the segment as baseline. Default is 0.09.''')
 
+parser_run_model.add_argument('--baseline_copynumber', default=2, type=int,
+                            help='''Copy number of baseline segments, must be even. Default is 2.''')
+
 #parser_run_model.add_argument('--priors', default=None, type=str,
 #                             help='''File of the prior distribution. If not provided,
 #                                use uniform prior. Default is None.''')

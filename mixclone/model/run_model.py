@@ -39,7 +39,7 @@ def run_one_subclone(args):
     
     # run the joint model
     joint_model = JointProbabilisticModel(args.max_copynumber, args.subclone_num, \
-                                          args.baseline_thred)
+                                          args.baseline_thred, args.baseline_copynumber)
     joint_model.read_data(args.input_filename_base)
     joint_model.preprocess()
     joint_model.run(args.max_iters, args.stop_value)
@@ -67,7 +67,7 @@ def run_all_subclone(args):
                                  str(subclone_num)
         
         joint_model = JointProbabilisticModel(args.max_copynumber, subclone_num,
-                                              args.baseline_thred)
+                                              args.baseline_thred, args.baseline_copynumber)
         joint_model.read_data(args.input_filename_base)
         joint_model.preprocess()
         joint_model.run(args.max_iters, args.stop_value)
