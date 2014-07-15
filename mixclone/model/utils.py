@@ -91,10 +91,6 @@ def get_copynumber_num(max_copynumber):
     
     return max_copynumber + 1
 
-def get_baseline_alleletype(baseline_copynumber):
-    
-    return 'P'*(baseline_copynumber/2) + 'M'*(baseline_copynumber/2)
-
 def get_genotype(max_copynumber):
     genotype = []
     

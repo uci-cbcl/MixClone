@@ -35,11 +35,10 @@ from mixclone.preprocess.data import Data
 from mixclone.model.utils import *
 
 class ProbabilisticModel(object):
-    def __init__(self, max_copynumber, subclone_num, baseline_thred, baseline_copynumber):
+    def __init__(self, max_copynumber, subclone_num, baseline_thred):
         self.max_copynumber = max_copynumber
         self.subclone_num = subclone_num
         self.baseline_thred = baseline_thred
-        self.baseline_copynumber = baseline_copynumber
         self.priors_parser = PriorParser()
         self._init_components()
         
@@ -58,8 +57,7 @@ class ProbabilisticModel(object):
         
     def run(self, max_iters, stop_value):
         trainer = self.model_trainer_class(self.priors, self.data, self.max_copynumber,
-                                           self.subclone_num, self.baseline_copynumber,
-                                           max_iters, stop_value)
+                                           self.subclone_num, max_iters, stop_value)
         
         trainer.train()
         trainer.predict()
@@ -79,7 +77,7 @@ class ProbabilisticModel(object):
 
 #JointSNVMix
 class ModelTrainer(object):
-    def __init__(self, priors, data, max_copynumber, subclone_num, baseline_copynumber, max_iters, stop_value):
+    def __init__(self, priors, data, max_copynumber, subclone_num, max_iters, stop_value):
         self.priors = priors
         
         self.data = data
@@ -87,8 +85,6 @@ class ModelTrainer(object):
         self.max_copynumber = max_copynumber
         
         self.subclone_num = subclone_num
-        
-        self.baseline_copynumber = baseline_copynumber
         
         self.max_iters = max_iters
         
@@ -110,10 +106,9 @@ class ModelTrainer(object):
         raise NotImplemented
 
 class ConfigParameters(object):
-    def __init__(self, max_copynumber, subclone_num, baseline_copynumber):
+    def __init__(self, max_copynumber, subclone_num):
         self.max_copynumber = max_copynumber
         self.subclone_num = subclone_num
-        self.baseline_copynumber = baseline_copynumber
         
         self._init_components()
 

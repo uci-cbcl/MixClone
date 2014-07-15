@@ -21,8 +21,8 @@ from mixclone.model.model_base import *
 from mixclone.model.utils import *
 
 class JointProbabilisticModel(ProbabilisticModel):
-    def __init__(self, max_copynumber, subclone_num, baseline_thred, baseline_copynumber):
-        ProbabilisticModel.__init__(self, max_copynumber, subclone_num, baseline_thred, baseline_copynumber)
+    def __init__(self, max_copynumber, subclone_num, baseline_thred):
+        ProbabilisticModel.__init__(self, max_copynumber, subclone_num, baseline_thred)
         
     def read_priors(self, priors_filename):
         if priors_filename != None:
@@ -44,11 +44,11 @@ class JointProbabilisticModel(ProbabilisticModel):
 
 
 class JointModelTrainer(ModelTrainer):
-    def __init__(self, priors, data, max_copynumber, subclone_num, baseline_copynumber, max_iters, stop_value):
-        ModelTrainer.__init__(self, priors, data, max_copynumber, subclone_num, baseline_copynumber, max_iters, stop_value)
+    def __init__(self, priors, data, max_copynumber, subclone_num, max_iters, stop_value):
+        ModelTrainer.__init__(self, priors, data, max_copynumber, subclone_num, max_iters, stop_value)
 
     def _init_components(self):
-        self.config_parameters = JointConfigParameters(self.max_copynumber, self.subclone_num, self.baseline_copynumber)
+        self.config_parameters = JointConfigParameters(self.max_copynumber, self.subclone_num)
         
         self.model_parameters = JointModelParameters(self.priors, self.data, self.config_parameters)
         
@@ -133,7 +133,7 @@ class JointModelTrainer(ModelTrainer):
             
             self.data.segments[j].allele_type = h_j
             self.data.segments[j].copy_number = c_H_j
-            if h_j != self.config_parameters.baseline_alleletype:
+            if h_j != constants.ALLELE_TYPE_BASELINE:
                 self.data.segments[j].subclone_prev = phi_j
                 self.data.segments[j].subclone_cluster = subclone_cluster_j
     
@@ -203,7 +203,7 @@ class JointModelTrainer(ModelTrainer):
                 if self.data.segments[j].LOH_status == 'TRUE' and check_balance_allele_type(h_T) == True:
                     ll_j[:, h] = -1.0*constants.INF
                     
-                if self.data.segments[j].baseline_label == 'TRUE' and h_T != self.config_parameters.baseline_alleletype:
+                if self.data.segments[j].baseline_label == 'TRUE' and h_T != constants.ALLELE_TYPE_BASELINE:
                     ll_j[:, h] = -1.0*constants.INF
             
             ll_j = np.logaddexp.reduce(ll_j, axis=1)
@@ -239,7 +239,7 @@ class JointModelTrainer(ModelTrainer):
                 if self.data.segments[j].LOH_status == 'TRUE' and check_balance_allele_type(h_T) == True:
                     ll_j[:, h] = -1.0*constants.INF
                     
-                if self.data.segments[j].baseline_label == 'TRUE' and h_T != self.config_parameters.baseline_alleletype:
+                if self.data.segments[j].baseline_label == 'TRUE' and h_T != constants.ALLELE_TYPE_BASELINE:
                     ll_j[:, h] = -1.0*constants.INF
             
             psi_j_temp = np.logaddexp.reduce(ll_j, axis=0)
@@ -325,14 +325,12 @@ class JointModelTrainer(ModelTrainer):
 
 
 class JointConfigParameters(ConfigParameters):
-    def __init__(self, max_copynumber, subclone_num, baseline_copynumber):
-        ConfigParameters.__init__(self, max_copynumber, subclone_num, baseline_copynumber)
+    def __init__(self, max_copynumber, subclone_num):
+        ConfigParameters.__init__(self, max_copynumber, subclone_num)
         
     def _init_components(self):
         self.copynumber = get_copynumber(self.max_copynumber)
         self.copynumber_num = get_copynumber_num(self.max_copynumber)
-        self.baseline_copynumber = self.baseline_copynumber
-        self.baseline_alleletype = get_baseline_alleletype(self.baseline_copynumber)
         self.genotype = get_genotype(self.max_copynumber)
         self.genotype_num = get_genotype_num(self.max_copynumber)
         self.allele_config = get_allele_config(self.max_copynumber)
@@ -424,7 +422,7 @@ class JointModelLikelihood(ModelLikelihood):
         phi = np.array(model_parameters.parameters['phi'])
         
         c_N = constants.COPY_NUMBER_NORMAL
-        c_S = self.config_parameters.baseline_copynumber
+        c_S = constants.COPY_NUMBER_BASELINE
         c_H = np.array(self.config_parameters.allele_config_CN)
         D_N_j = self.data.segments[j].normal_reads_num
         D_T_j = self.data.segments[j].tumor_reads_num
@@ -501,7 +499,7 @@ class JointModelLikelihood(ModelLikelihood):
         K = self.config_parameters.subclone_num
         
         c_N = constants.COPY_NUMBER_NORMAL
-        c_S = self.config_parameters.baseline_copynumber
+        c_S = constants.COPY_NUMBER_BASELINE
         c_H = np.array(self.config_parameters.allele_config_CN)
         D_N_j = self.data.segments[j].normal_reads_num
         D_T_j = self.data.segments[j].tumor_reads_num
