@@ -1,4 +1,4 @@
-README for MixClone 1.2
+README for MixClone 1.1
 =======================
 
 
