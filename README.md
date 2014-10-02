@@ -70,6 +70,9 @@ MixClone is composed of three modules:
 
 * `postprocess`. Take the *.MixClone.output.pkl file as input, and extract various output files, including the segments file with estimated parameters, the allele counts file, the subclonal analysis summary and a few plots.
 
+The general workflow of MixClone is this
+![alt tag](https://github.com/uci-cbcl/MixClone/blob/gh-pages/images/workflow.png)
+
 
 
 Tumor genome segmentation
