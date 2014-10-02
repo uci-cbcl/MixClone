@@ -1,0 +1,289 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Mixclone by uci-cbcl</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <script src="javascripts/scale.fix.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1 class="header">Mixclone</h1>
+        <p class="header">A mixture model for inferring tumor subclonal populations</p>
+
+        <ul>
+          <li class="download"><a class="buttons" href="https://github.com/uci-cbcl/MixClone/zipball/master">Download ZIP</a></li>
+          <li class="download"><a class="buttons" href="https://github.com/uci-cbcl/MixClone/tarball/master">Download TAR</a></li>
+          <li><a class="buttons github" href="https://github.com/uci-cbcl/MixClone">View On GitHub</a></li>
+        </ul>
+
+        <p class="header">This project is maintained by <a class="header name" href="https://github.com/uci-cbcl">uci-cbcl</a></p>
+
+
+      </header>
+      <section>
+        <h1>
+<a name="readme-for-mixclone-11" class="anchor" href="#readme-for-mixclone-11"><span class="octicon octicon-link"></span></a>README for MixClone 1.1</h1>
+
+<h1>
+<a name="introduction" class="anchor" href="#introduction"><span class="octicon octicon-link"></span></a>INTRODUCTION</h1>
+
+<p>MixClone is a comprehensive software package to study the subclonal 
+structures of tumor genomes, including subclonal cellular prevalences 
+estimation, allelic configuration estimation, absolute copy number 
+estimation and a few visualization tools. It takes next-generation 
+sequencing data of paired normal-tumor samples as input and integrates 
+sequence information from both somatic copy number alterations and allele
+frequencies within a unified probabilistic framework. If you have any 
+questions, please email <a href="mailto:yil8@uci.edu">yil8@uci.edu</a></p>
+
+<h1>
+<a name="install" class="anchor" href="#install"><span class="octicon octicon-link"></span></a>INSTALL</h1>
+
+<h2>
+<a name="prerequisites" class="anchor" href="#prerequisites"><span class="octicon octicon-link"></span></a>Prerequisites</h2>
+
+<p><strong>Mandatory</strong> </p>
+
+<ul>
+<li><p>Python (2.7). <a href="http://www.python.org/download/releases/2.7.3/">Python 2.7.3</a> is recommended.</p></li>
+<li><p><a href="http://www.numpy.org/">Numpy</a>(&gt;=1.6.1). You can download the source of Numpy from <a href="http://sourceforge.net/projects/numpy/files/">here</a>.</p></li>
+<li><p><a href="http://www.scipy.org/">Scipy</a>(&gt;=0.10). You can download the source of Scipy from <a href="http://sourceforge.net/projects/scipy/files/">here</a>.</p></li>
+<li><p><a href="https://code.google.com/p/pysam/">Pysam</a>(&gt;=0.7). To install Pysam, you also need to install <a href="http://cython.org/">Cython</a> first. </p></li>
+</ul><p><strong>Optional</strong> </p>
+
+<ul>
+<li>
+<a href="http://matplotlib.org/">matplotlib</a>(&gt;=1.2.0) is required for a few visualization tools.</li>
+</ul><p>Although not mandatory, Linux system is recommended. Also, <a href="http://samtools.sourceforge.net/">samtools</a> is not required by MixClone, but can be useful for creating bam, bam index and fasta index files which are required by the pysam module of MixClone. </p>
+
+<h2>
+<a name="install-from-source" class="anchor" href="#install-from-source"><span class="octicon octicon-link"></span></a>Install from source</h2>
+
+<p>Download the compressed source file MixClone-*.tar.gz and do as follows:</p>
+
+<pre><code>$ tar -xzvf MixClone-*.tar.gz
+$ cd MixClone-*
+$ python setup.py install
+</code></pre>
+
+<p>If you prefer to install MixClone other than the default directory, you can also use this command:</p>
+
+<pre><code>$ python setup.py install --prefix /home/yili/
+</code></pre>
+
+<p>There is also a <code>bin/</code> folders under MixClone-*. The <code>bin/</code> folder contains useful utilities, such as the R code to run <a href="http://compbio.med.harvard.edu/Supplements/PNAS11.html">BICseq</a> and the python script to convert BICseq results to BED file. You can copy these two folders somewhere easily accessible.</p>
+
+<h1>
+<a name="usage" class="anchor" href="#usage"><span class="octicon octicon-link"></span></a>USAGE</h1>
+
+<h2>
+<a name="overview" class="anchor" href="#overview"><span class="octicon octicon-link"></span></a>Overview</h2>
+
+<p>MixClone is composed of three modules: </p>
+
+<ul>
+<li><p><code>preprocess</code>. Preprocess the reads aliments of paired normal-tumor samples in BAM format, the tumor genome segmentation file in BED format, and produce the *.MixClone.input.pkl file as output, which will be used for running the model.</p></li>
+<li><p><code>run_model</code>. Take the *.MixClone.input.pkl as input, estimate the subclonal cellular prevalence, the absolute copy number and the allelic configuration of each segment, and produce the *.MixClone.output.pkl file as output, which will be used for postprocessing. If the user runs the model without specifying the number of subclonal populations, MixClone will run the model five times with subclonal number ranges from 1 to 5, and recommend the most likely model.</p></li>
+<li><p><code>postprocess</code>. Take the *.MixClone.output.pkl file as input, and extract various output files, including the segments file with estimated parameters, the allele counts file, the subclonal analysis summary and a few plots.</p></li>
+</ul><h2>
+<a name="tumor-genome-segmentation" class="anchor" href="#tumor-genome-segmentation"><span class="octicon octicon-link"></span></a>Tumor genome segmentation</h2>
+
+<p>MixClone requires a segmentation file of the tumor genome in BED format before running the package. We used <a href="http://compbio.med.harvard.edu/Supplements/PNAS11.html">BICseq</a> in the original paper. To run a BICseq analysis, you can copy the commands in <code>bin/BICseq.R</code> (Li, Y., Xie, X. 2014, Bioinformatics) and paste them in a R interative shell. Or you can also run the R script from the command line:</p>
+
+<pre><code>$ R CMD BATCH bin/BICseq.R
+</code></pre>
+
+<p>Note that,<code>normal.bam</code> and <code>tumor.bam</code> must be in the same directory where you run the command. The R script will output a segments file <code>segments.BICseq</code>. Then you can use the other script <code>bin/BICseq2bed.py</code> (Li, Y., Xie, X. 2014, Bioinformatics) to convert the segments file into BED format:</p>
+
+<pre><code>$ BICseq2bed.py segments.BICseq segments.bed --seg_length 1000000
+</code></pre>
+
+<p><strong>--seg_length</strong> Only convert segments with length longer than the threshold.</p>
+
+<h2>
+<a name="preprocess" class="anchor" href="#preprocess"><span class="octicon octicon-link"></span></a>Preprocess</h2>
+
+<p>This part of README is based on <a href="https://code.google.com/p/joint-snv-mix/wiki/runningOld">JoinSNVMix</a>. To preprocess the paired cancer sequencing data, execute:</p>
+
+<pre><code>$ MixClone.py preprocess REFERENCE_GENOME.fasta SEGMENTS.bed NORMAL.bam TUMOUR.bam INPUT_BASENAME --min_depth 20 --min_base_qual 10 --min_map_qual 10 --process_num 10
+</code></pre>
+
+<p><strong>REFERENCE_GENOME.fasta</strong> The path to the fasta file that the paired BAM files aligned to. Currently, only the
+<a href="https://genome.ucsc.edu/FAQ/FAQformat.html#format1">UCSC</a> and <a href="http://uswest.ensembl.org/info/website/upload/bed.html">ENSEMBL</a> chromosome format are supported. Note that the index file should be generated for the reference genome. This can be done by running samtools as follows:</p>
+
+<p><code>$ samtools faidx REFERENCE_GENOME.fasta</code></p>
+
+<p><strong>SEGMENTS.bed</strong> The BED file for the tumor genome segmentation.</p>
+
+<p><strong>NORMAL.bam</strong> The BAM file for the normal sample. The BAM index file should be generated for this file and named NORMAL.bam.bai. This can be done by running</p>
+
+<p><code>$ samtools index NORMAL.bam</code></p>
+
+<p><strong>TUMOUR.bam</strong> The bam file for the tumour sample. As for the normal this file needs to be indexed.</p>
+
+<p><strong>INPUT_BASENAME</strong> The base name of the preprocessed input file to be created.</p>
+
+<p><strong>--min_depth</strong> Minimum depth in both normal and tumor sample required to use a site in the analysis.</p>
+
+<p><strong>--min_base_qual</strong> Minimum base quality required for each base.</p>
+
+<p><strong>--min_map_qual</strong> Minimum mapping quality required for each base.</p>
+
+<p><strong>--process_num</strong> Number of processes to launch for preprocessing.</p>
+
+<h2>
+<a name="run-model" class="anchor" href="#run-model"><span class="octicon octicon-link"></span></a>Run model</h2>
+
+<p>After the preprocessed input file is created, we can run the probabilistic model of MixClone by execute:</p>
+
+<pre><code>$ MixClone.py run_model INPUT_BASENAME OUTPUT_BASENAME --max_copynumber 6 --subclone_num 2 --max_iters 30 --stop_value 1e-6
+</code></pre>
+
+<p><strong>INPUT_BASENAME</strong> The base name of the preprocessed input file created in the preprocess step.</p>
+
+<p><strong>OUTPUT_BASENAME</strong> The base name of the output file with model parameters estimated to be created.</p>
+
+<p><strong>--max_copynumber</strong> The maximum copy number of each segment allows to take.</p>
+
+<p><strong>--subclone_num</strong> The number of subclones within the tumor sample. If not provided, go through [1, 5] and select the most likely model.</p>
+
+<p><strong>--max_iters</strong> Maximum number of iterations for training.</p>
+
+<p><strong>--stop_value</strong> Stop value of the EM algorithm for training. If the change of log-likelihood is lower than this value, stop training.</p>
+
+<h2>
+<a name="postprocess" class="anchor" href="#postprocess"><span class="octicon octicon-link"></span></a>Postprocess</h2>
+
+<p>After the output file with model parameters estimated, we can extract various result files from the output file by execute:</p>
+
+<pre><code>$ MixClone.py postprocess OUTPUT_BASENAME
+</code></pre>
+
+<p><strong>BASENAME</strong> The base name of the output file created in the run_model step.</p>
+
+<h2>
+<a name="output-files" class="anchor" href="#output-files"><span class="octicon octicon-link"></span></a>Output files</h2>
+
+<p><strong>*.MixClone.segments</strong> The segments file. It contains the genomic and subclonal information of each segment. The definition of each column in a *.MixClone.segments file is listed here:</p>
+
+<table>
+<thead><tr>
+<th align="left">Column</th>
+<th align="left">Definition</th>
+</tr></thead>
+<tbody>
+<tr>
+<td align="left">seg_name</td>
+<td align="left">Name of the segment</td>
+</tr>
+<tr>
+<td align="left">chrom</td>
+<td align="left">Chromosome of the segment</td>
+</tr>
+<tr>
+<td align="left">start</td>
+<td align="left">Start position of the segment</td>
+</tr>
+<tr>
+<td align="left">end</td>
+<td align="left">End position of the segment</td>
+</tr>
+<tr>
+<td align="left">normal_reads_num</td>
+<td align="left">Count of reads mapped to the segment in the normal sample</td>
+</tr>
+<tr>
+<td align="left">tumor_reads_num</td>
+<td align="left">Count of reads mapped to the segment in the tumor sample</td>
+</tr>
+<tr>
+<td align="left">LOH_frac</td>
+<td align="left">Fraction of LOH sites in the segment</td>
+</tr>
+<tr>
+<td align="left">LOH_status</td>
+<td align="left">FALSE -&gt; no LOH; TRUE -&gt; significant LOH; UNCERTAIN -&gt; medium level LOH</td>
+</tr>
+<tr>
+<td align="left">log2_ratio</td>
+<td align="left">Log2 ratio between tumor_reads_num and normal_reads_num</td>
+</tr>
+<tr>
+<td align="left">copy_number</td>
+<td align="left">Estimated absolute copy number of the segment</td>
+</tr>
+<tr>
+<td align="left">allele_type</td>
+<td align="left">Estimated allelic configuration of the segment</td>
+</tr>
+<tr>
+<td align="left">subclone_prev</td>
+<td align="left">Estimated subclonal cellular prevalence of the segment</td>
+</tr>
+<tr>
+<td align="left">subclone_cluster</td>
+<td align="left">Estimated subclonal cluster label of the segment</td>
+</tr>
+</tbody>
+</table><p><strong>*.MixClone.counts</strong> The allele counts file. It contains the allelic counts information of sites, which are heterozygous SNP sites in the normal genome. The definition of each column in a *.MixClone.counts file is listed here:</p>
+
+<table>
+<thead><tr>
+<th align="left">Column</th>
+<th align="left">Definition</th>
+</tr></thead>
+<tbody>
+<tr>
+<td align="left">seg_name</td>
+<td align="left">Name of the segment</td>
+</tr>
+<tr>
+<td align="left">normal_A</td>
+<td align="left">Count of bases match A allele in the normal sample</td>
+</tr>
+<tr>
+<td align="left">normal_B</td>
+<td align="left">Count of bases match B allele in the normal sample</td>
+</tr>
+<tr>
+<td align="left">tumor_A</td>
+<td align="left">Count of bases match A allele in the tumor sample</td>
+</tr>
+<tr>
+<td align="left">tumor_B</td>
+<td align="left">Count of bases match B allele in the tumor sample</td>
+</tr>
+<tr>
+<td align="left">chrom</td>
+<td align="left">Chromosome of the site</td>
+</tr>
+<tr>
+<td align="left">pos</td>
+<td align="left">Genomic position of the site</td>
+</tr>
+</tbody>
+</table><p><strong>*.MixClone.summary</strong> The summary file about the subclonal analysis, including log-likelihood, subclonal labels and the corresponding cellular prevalences.</p>
+
+<p><strong>*.MixClone.heatmap</strong> The folder of BAF heat maps plotted for each segment (Li, Y., Xie, X. 2014, Bioinformatics).</p>
+
+<p><strong>*.MixClone.segplot.png</strong> The plot of estimated subclonal cellular prevalences and absolute copy numbers of all the segments of non-diploid allelic configuration.</p>
+
+<p><strong>*.MixClone.model_selection</strong> The summary about model selection if <code>--subclone_num</code> is not specified. It includes the log-likelihood and related change of each model with different number of subclones. Although MixClone selects the most likely model based on a heuristic described in the original paper, users can select the best model use their own judgement based on the log-likelihood related information.</p>
+      </section>
+      <footer>
+        <p><small>Hosted on <a href="http://pages.github.com">GitHub Pages</a> using the Dinky theme</small></p>
+      </footer>
+    </div>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+		
+  </body>
+</html>
