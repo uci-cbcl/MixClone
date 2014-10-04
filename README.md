@@ -1,5 +1,5 @@
-README for MixClone 1.1
-=======================
+README for MixClone 1.1.1
+=========================
 
 
 INTRODUCTION
