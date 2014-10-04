@@ -24,9 +24,8 @@ def run_model(args):
     if args.max_copynumber < 1 or args.max_copynumber > 8:
         print "Currently only support max copynumber in range [1, 8]."
         sys.exit(1)
-    if args.subclone_num < 0:# or args.subclone_num > 5:
-        print "Subclone number must be integer."
-        #print "Currently only support subclone number in range [1, 5]."
+    if args.subclone_num < 0:
+        print "Subclone number must be positive integers."
         sys.exit(1)
         
     if args.subclone_num == 0:
