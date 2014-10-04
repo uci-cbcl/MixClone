@@ -252,7 +252,14 @@ def get_phi_init(subclone_num):
     phi_init[4] = list(itertools.product(*phi_range_dict[4]))
     phi_init[5] = list(itertools.product(*phi_range_dict[5]))
     
-    return phi_init[subclone_num]
+    if subclone_num <= 5:
+        return phi_init[subclone_num]
+    else:
+        phi_init = list(phi_range_dict[5])
+        for i in range(subclone_num-5):
+            phi_init.append([np.random.rand()])
+        
+        return list(itertools.product(*phi_init))
 
 #def model_selection_by_ll_ratio(ll_lst, subclone_num_lst):
 #    ll_change_ratio = []
