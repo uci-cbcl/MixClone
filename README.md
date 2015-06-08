@@ -29,8 +29,7 @@ Prerequisites
 
 * [Scipy](http://www.scipy.org/)(>=0.10). You can download the source of Scipy from [here](http://sourceforge.net/projects/scipy/files/).
 
-* [Pysam](https://code.google.com/p/pysam/)(>=0.7). To install Pysam, you also need to install [Cython](http://cython.org/) first. 
-
+* [Pysam](https://code.google.com/p/pysam/)(>=0.7). Pysam_0.7X preferred, Pysam_0.8X tested and seems to be much slower. To install Pysam, you also need to install [Cython](http://cython.org/) first. 
 
 **Optional** 
 * [matplotlib](http://matplotlib.org/)(>=1.2.0) is required for a few visualization tools.
