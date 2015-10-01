@@ -122,7 +122,7 @@ def extract_BAFheatmap(data, output_filename_base):
         plt.yticks(sp.linspace(0, 100, 11), sp.linspace(0, 1, 11))
         plt.xlabel('Tumor sample B allele frequency')
         plt.ylabel('Normal sample B allele frequency')
-        plt.imshow(BAF_counts_j, vmin = 0, vmax = color_max_j)
+        plt.imshow(BAF_counts_j, vmin = 0, vmax = max(1, color_max_j))
         cbar = plt.colorbar(ticks=[0, color_max_j], orientation='vertical', shrink=0.78)
         cbar.ax.set_yticklabels(['0', '>= ' + str(int(color_max_j))])
         plt.savefig('./' + outheatmap_dir_name + '/' + seg_name_j, bbox_inches='tight')
