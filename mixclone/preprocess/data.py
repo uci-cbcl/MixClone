@@ -53,7 +53,7 @@ class Data:
         
         sam_SQ = normal_bam.header['SQ']
         sam_chrom_format = get_chrom_format(map(lambda x:x['SN'], sam_SQ))
-        chrom_lens = get_chrom_lens(chrom_idx_list, sam_SQ)
+        chrom_lens, chrom_idxs = get_chrom_lens_idxs(chrom_idx_list, sam_SQ)
         
         bed_chroms, bed_starts, bed_ends = BEDParser(bed_file_name)
         bed_chrom_format = get_chrom_format(bed_chroms)
@@ -69,7 +69,7 @@ class Data:
                 sys.stdout.flush()
                 continue
             
-            chrom_lst_idx = chrom_idx_list.index(chrom_idx)
+            chrom_lst_idx = chrom_idxs.index(chrom_idx)
             
             if bed_starts[i] < chrom_start or bed_ends[i] > chrom_lens[chrom_lst_idx]:
                 print 'Out of range chromsome {0}, segment {1} excluded...'.format(bed_chroms[i], seg_name)
