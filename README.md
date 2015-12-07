@@ -192,3 +192,6 @@ Output files
 
 **\*.MixClone.model_selection** The summary about model selection if `--subclone_num` is not specified. It includes the log-likelihood and related change of each model with different number of subclones. Although MixClone selects the most likely model based on a heuristic described in the original paper, users can select the best model use their own judgement based on the log-likelihood related information.
 
+Reference
+=========
+Li, Y., Xie, X. (2015). MixClone: a mixture model for inferring tumor subclonal populations. BMC genomics.
