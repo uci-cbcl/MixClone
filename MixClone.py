@@ -81,7 +81,7 @@ parser_run_model.add_argument('--subclone_num', default=0, type=int,
 
 parser_run_model.add_argument('--baseline_thred', default=0.16, type=float,
                             help='''The threshold of LOH SNP sites fraction within each segment to
-                            define the segment as baseline. Default is 0.09.''')
+                            define the segment as baseline. Default is 0.16.''')
 
 #parser_run_model.add_argument('--priors', default=None, type=str,
 #                             help='''File of the prior distribution. If not provided,
