@@ -79,7 +79,7 @@ parser_run_model.add_argument('--subclone_num', default=0, type=int,
                             help='''Number of subclones within the tumor sample. If not provided,
                                 go through [1, 5] and select the best model. Default is None.''')
 
-parser_run_model.add_argument('--baseline_thred', default=0.09, type=float,
+parser_run_model.add_argument('--baseline_thred', default=0.16, type=float,
                             help='''The threshold of LOH SNP sites fraction within each segment to
                             define the segment as baseline. Default is 0.09.''')
 
